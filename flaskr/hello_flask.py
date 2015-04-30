@@ -47,7 +47,7 @@ def make_age_bars():
 def hist_ages_gender(term, ages_men, ages_women, total_men, total_women, min_age=10, max_age=90, num_bins=9):
 
     fig = plt.figure() # Fig name just to be able to close it again
-    plt.title('Age and gender distribution for \"' + term + '\"')
+    plt.title('Age and gender distribution for:     ' + term + '')
     plt.xlabel('Age range')
     plt.ylabel('Number of people')
 
@@ -123,7 +123,7 @@ def do_query(query):
 
 
 def term_to_query(term):
-    return "text:\"" + term + '\"' # Remember to set which field to query on (text for review-centric, review for user-centric)
+    return "text:" + term  # Remember to set which field to query on (text for review-centric, review for user-centric)
 
 @APP.route('/')
 def index():
@@ -176,10 +176,10 @@ def show_results():
         while len(age_gen_hist) < 2:
             age_gen_hist.append(cStringIO.StringIO())
 
-        genders = [[genders[i][u''], genders[i][u'M'], genders[i][u'F']] for i in range(len(genders))]
+        genders = [[genders[i][u''], genders[i][u'M'], genders[i][u'F']] for i in range(len(response_full))]
         while len(genders) < 2:
             genders.append([0,0,0])
-        print 'genders:', genders
+#        print 'genders:', genders
         # gen_bars = [make_bars(genders[0], ['Male', 'Female'], term1), make_bars(genders[1], ['Male', 'Female'], term2)]
         # distribution = make_bars(num_responses, [term1, term2])
 
@@ -189,13 +189,13 @@ def show_results():
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
-        cities = s.query('text:test', facet='true', facet_limit=-1, facet_field=['gender', 'age','city'], fq=['country:Denmark']).facet_counts[u'facet_fields'][u'city']
+        cities = s.query('text:det er', facet='true', facet_limit=-1, facet_field=['gender', 'age','city'], fq=['country:Denmark']).facet_counts[u'facet_fields'][u'city']
         hitslist = [[city, val] for city, val in cities.iteritems() if val > 0]
         print len(hitslist)
 
-        print helper_scripts.locdata
+#        print helper_scripts.locdata
 #        for line in hitslist:
- #           print line
+#            print line
 
 
 

@@ -129,40 +129,6 @@
    <field name="city" type="string" indexed="true" stored="true" multiValued="false"/>
    <field name="location" type="location" indexed="true" stored="true" multiValued="false"/>
 
-   <!-- <field name="sku" type="text_en_splitting_tight" indexed="true" stored="true" omitNorms="true"/> -->
-   <!-- <field name="name" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="manu" type="text_general" indexed="true" stored="true" omitNorms="true"/> -->
-   <!-- <field name="cat" type="string" indexed="true" stored="true" multiValued="true"/> -->
-   <!-- <field name="features" type="text_general" indexed="true" stored="true" multiValued="true"/> -->
-   <!-- <field name="includes" type="text_general" indexed="true" stored="true" termVectors="true" termPositions="true" termOffsets="true" /> -->
-
-   <!-- <field name="weight" type="float" indexed="true" stored="true"/> -->
-   <!-- <field name="price"  type="float" indexed="true" stored="true"/> -->
-   <!-- <field name="popularity" type="int" indexed="true" stored="true" /> -->
-   <!-- <field name="inStock" type="boolean" indexed="true" stored="true" /> -->
-
-   <!-- <field name="store" type="location" indexed="true" stored="true"/> -->
-
-   <!-- Common metadata fields, named specifically to match up with
-     SolrCell metadata when parsing rich documents such as Word, PDF.
-     Some fields are multiValued only because Tika currently may return
-     multiple values for them. Some metadata is parsed from the documents,
-     but there are some which come from the client context:
-       "content_type": From the HTTP headers of incoming stream
-       "resourcename": From SolrCell request param resource.name
-   -->
-   <!-- <field name="title" type="text_general" indexed="true" stored="true" multiValued="true"/> -->
-   <!-- <field name="subject" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="description" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="comments" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="author" type="text_general" indexed="true" stored="true" multiValued="true"/> -->
-   <!-- <field name="keywords" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="category" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="resourcename" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="url" type="text_general" indexed="true" stored="true"/> -->
-   <!-- <field name="content_type" type="string" indexed="true" stored="true" multiValued="true"/> -->
-   <!-- <field name="last_modified" type="date" indexed="true" stored="true"/> -->
-   <!-- <field name="links" type="string" indexed="true" stored="true" multiValued="true"/> -->
 
    <!-- Main body of document extracted by SolrCell.
         NOTE: This field is not indexed by default, since it is also copied to "text"
