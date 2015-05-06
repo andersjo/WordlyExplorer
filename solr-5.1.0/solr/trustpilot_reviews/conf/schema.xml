@@ -128,7 +128,9 @@
    <field name="country" type="string" indexed="true" stored="true" multiValued="false"/>
    <field name="city" type="string" indexed="true" stored="true" multiValued="false"/>
    <field name="location" type="location" indexed="true" stored="true" multiValued="false"/>
-
+   <field name="nuts-1" type="string" indexed="true" stored="true" multiValued="false"/>
+   <field name="nuts-2" type="string" indexed="true" stored="true" multiValued="false"/>
+   <field name="nuts-3" type="string" indexed="true" stored="true" multiValued="false"/>
 
    <!-- Main body of document extracted by SolrCell.
         NOTE: This field is not indexed by default, since it is also copied to "text"

@@ -1,0 +1,28 @@
+# Let git ignore some filetypes
+
+# For now, only include what you are told!
+
+
+# Python bytecompiled files
+*.py[cod]
+*$py.class
+
+# We only want specifically added text type files
+*.txt
+*.xml
+*.properties
+*.unloaded
+*.conf
+*.html
+*.[ct]sv
+*.json
+*.js
+*.cfg
+*.ini
+
+# No compressed files
+*.zip
+*.jar
+
+# No images
+*.jpg
