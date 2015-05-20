@@ -45,7 +45,7 @@
     that avoids logging every request
 -->
 
-<schema name="example" version="1.5">
+<schema name="Trustpilot Reviews" version="1.5">
   <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -131,6 +131,7 @@
    <field name="nuts-1" type="string" indexed="true" stored="true" multiValued="false"/>
    <field name="nuts-2" type="string" indexed="true" stored="true" multiValued="false"/>
    <field name="nuts-3" type="string" indexed="true" stored="true" multiValued="false"/>
+   <field name="location_rpt" type="location_rpt" indexed="true" stored="true" multiValued="false"/> <!-- can be multivalued -->
 
    <!-- Main body of document extracted by SolrCell.
         NOTE: This field is not indexed by default, since it is also copied to "text"
@@ -701,8 +702,11 @@
       For more information about this and other Spatial fields new to Solr 4, see:
       http://wiki.apache.org/solr/SolrAdaptersForLuceneSpatial4
     -->
-    <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType"
-        geo="true" distErrPct="0.025" maxDistErr="0.000009" units="degrees" />
+    <fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
+               geo="true"
+               distErrPct="0.025"
+               maxDistErr="0.001"
+               distanceUnits="kilometers" />
 
     <!-- Spatial rectangle (bounding box) field. It supports most spatial predicates, and has
      special relevancy modes: score=overlapRatio|area|area2D (local-param to the query).  DocValues is required for

@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
 
 import flask
-import solr
+import solr # Trying to switch to urllib3 (or 2) instead
+from urllib3 import *
+import json
 import cgi, cgitb
 import vincent
 import matplotlib.pyplot as plt
@@ -10,6 +12,7 @@ import cStringIO
 import seaborn as sns
 import codecs
 import helper_scripts
+import itertools
 
 from itertools import islice
 from flask import request
@@ -100,7 +103,7 @@ def do_query(query):
     frend = 89
     frgap = 10
     country = reverse_cc[request.form['country'][-2:]]
-    facet_fields=['gender', 'location']
+    facet_fields=['gender', 'city']
     geofcph = '{!geofilt pt=55.676,12.568 sfield=location d=25}'
     geofaarhus = '{!geofilt pt=56.157,10.21 sfield=location d=25}'
     filterq = ['country:\"' + country + '\"']
@@ -115,9 +118,15 @@ def do_query(query):
         filterq.append(geofaarhus)
         filterqM.append(geofaarhus)
         filterqF.append(geofaarhus)
-    response = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend, facet_range_gap=frgap, facet_field=facet_fields, fq=filterq)
-    responseM = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend, facet_range_gap=frgap, facet_field=facet_fields, fq=filterqM)
-    responseF = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend, facet_range_gap=frgap, facet_field=facet_fields, fq=filterqF)
+    response = s.query(query, rows=5, facet_heatmap='location_rpt', facet_heatmap_format='png', facet='true', facet_range=['age'],
+                       facet_heatmap_gridLevel=3,#facet_heatmap_distErrPct=0.02,
+                       facet_heatmap_maxX=20,facet_heatmap_columns='512',
+                       facet_range_start=frstart, facet_range_end=frend,
+                       facet_range_gap=frgap, facet_field=facet_fields, fq=filterq)
+    responseM = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend,
+                        facet_range_gap=frgap, facet_field=facet_fields, fq=filterqM)
+    responseF = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend,
+                        facet_range_gap=frgap, facet_field=facet_fields, fq=filterqF)
     response_texts = [response_t['text'] for response_t in response]
     return (response_texts, response, responseM, responseF)
 
@@ -138,6 +147,25 @@ def show_results():
     query = "text:*" # Remember to set which field to query on (text for review-centric, review for user-centric)
 
     _, data, dataM, dataF = do_query(query)
+
+    hitslist = [[city, val] for city, val in data.facet_counts[u'facet_fields'][u'city'].iteritems() if val > 0]
+    print 'how many cities again?', len(hitslist)
+    print data.facet_counts
+    img = data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png']
+
+    image_output = cStringIO.StringIO()
+    image_output.write(img.decode('base64'))   # Write decoded image to buffer
+    print image_output
+    #plt.imshow(image_output)
+
+    #plt.imshow(data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png'])
+
+    heatmap = s.query('*:*', facet='true', facet_field=['city', 'location_rpt'], fq=['country:Denmark'],
+                      facet_heatmap='location_rpt', facet_heatmap_format='ints2D', #facet_heatmap_geom={'minX':8,'minY':54,'maxX':13,'maxY':58},
+                      facet_heatmap_distErrPct=0.15)
+
+    print 'results:', heatmap.facet_counts
+
 
     total_ages, total_gender, total_ageM, total_ageF = get_stats(data, dataM, dataF)
 
@@ -174,12 +202,13 @@ def show_results():
         for i in range(len(response_full)):
             age_gen_hist.append(hist_ages_gender(term[i], agesM[i], agesF[i], total_ageM, total_ageF))
         while len(age_gen_hist) < 2:
-            age_gen_hist.append(cStringIO.StringIO())
+            #age_gen_hist.append(cStringIO.StringIO()) # TODO: REMEMBER ME!
+            age_gen_hist.append(image_output)
 
-        genders = [[genders[i][u''], genders[i][u'M'], genders[i][u'F']] for i in range(len(response_full))]
+        genders = [[genders[i][u'M'], genders[i][u'F']] for i in range(len(response_full))]
         while len(genders) < 2:
-            genders.append([0,0,0])
-#        print 'genders:', genders
+            genders.append([0,0])
+
         # gen_bars = [make_bars(genders[0], ['Male', 'Female'], term1), make_bars(genders[1], ['Male', 'Female'], term2)]
         # distribution = make_bars(num_responses, [term1, term2])
 
@@ -189,14 +218,22 @@ def show_results():
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
-        cities = s.query('text:det er', facet='true', facet_limit=-1, facet_field=['gender', 'age','city'], fq=['country:Denmark']).facet_counts[u'facet_fields'][u'city']
-        hitslist = [[city, val] for city, val in cities.iteritems() if val > 0]
-        print len(hitslist)
+        qresponse = s.query('text:det', rows=5, facet='true', facet_field=['gender', 'city'], fq=['country:Denmark'])
 
-#        print helper_scripts.locdata
-#        for line in hitslist:
-#            print line
+        hitslist = [[city, val] for city, val in qresponse.facet_counts[u'facet_fields'][u'city'].iteritems() if val > 0]
+        print 'how many cities again?', len(hitslist)
+        print hitslist
+        # print helper_scripts.locdat
+        # for line in hitslist:
+        #     print line
 
+        # print [range(8, 13),range(54,58)]
+        # facet_heatmap_geom="'8 54' TO '13 58'",
+
+
+
+
+        # ["8 54" TO "13 58"],
 
 
         return flask.render_template('show_results.html', responses = [response_texts[0], response_texts[1]],

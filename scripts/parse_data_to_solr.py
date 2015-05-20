@@ -72,12 +72,13 @@ def locationData(filename):
     for line in locfile:
         Country_code, city, _, location = line.strip("\n").split("\t")
         # print 'befor location: ', location
-        location = location.replace('[', '').replace(']', '').split(',')
-        location = [float(loc) for loc in location]
-        # print 'this location: ', location
-        best_loc = 3*np.argmax(np.array([location[i] for i in range(2, len(location), 3)]))
-        data[Country_code][city] = str(location[best_loc]) + ', ' +  str(location[best_loc+1])
-        # print data
+        if location:
+            location = location.replace('[', '').replace(']', '').split(',')
+            location = [float(loc) for loc in location]
+            # print 'this location: ', location
+            best_loc = 3*np.argmax(np.array([location[i] for i in range(2, len(location), 3)]))
+            data[Country_code][city] = str(location[best_loc]) + ', ' +  str(location[best_loc+1])
+            # print data
     return data
 
 
@@ -99,7 +100,7 @@ country_codes, _ = make_country_codes()
 #print country_codes
 
 def read_json_line(line):
-    data = json.loads(line, encoding='utf-8')
+    data = json.loads(line)
 
     reviews = []
     for re_id, review in enumerate(data['reviews']):
@@ -107,15 +108,17 @@ def read_json_line(line):
         title = review['title']
         if title:
             if title[-1] != '.':
-                title = title + '.'
+                title = title + '. '
             if 'text' in review and review['text'] != []:
-                rev['text'] = title + review['text'][0]
+                text = " ".join(review['text'])
+                rev['text'] = title + text
             else:
                 rev['text'] = title
         elif 'text' in review and review['text'] != []:
-            rev['text'] = review['text'][0]
+            text = " ".join(review['text'])
+            rev['text'] = text
         else:
-            print 'no text'
+            #print 'no text'
             rev = {'text': None, 'user_id': None, 'review_id': None}
             continue
         if 'birth_year' in data and data['birth_year']:
@@ -129,19 +132,24 @@ def read_json_line(line):
         locations = data['location'].split(",")
         rev['country'] = locations[-1].strip() # last entry is always the country, but strip whitespaces before/after name
         if len(locations) > 1:
-            rev['city'] = locations[0]
+            city = locations[0]
+            rev['city'] = city.replace(" Municipality", "")
 #            print rev['country'], type(rev['country'])
             try:
+                # print 'USER ID', rev['user_id']
                 cc = country_codes[rev['country']]
                 rev['location'] = locdata[cc][rev['city']]
-                rev['nuts-1'] = data['nuts-1']
-                rev['nuts-2'] = data['nuts-2']
-                rev['nuts-3'] = data['nuts-3']
+                rev['location_rpt'] = locdata[cc][rev['city']]
+                rev['nuts-1'] = data['NUTS-1']
+                rev['nuts-2'] = data['NUTS-2']
+                rev['nuts-3'] = data['NUTS-3']
             except KeyError as e:
-                print 'Country set as ', e
-                cc = rev['country']
-                rev['country'] = rev_cc[cc]
-                rev['location'] = locdata[cc][rev['city']]
+                print 'KeyError using ', e
+                print 'USER ID', rev['user_id']
+                # print 'country: ', rev['country']
+                print 'city: ', rev['city']
+                # cc = rev['country']
+                # rev['location'] = locdata[cc][rev['city']]
 #            print 'only 1 loc', rev['country']
 
         reviews.append(rev)
@@ -166,7 +174,7 @@ if len(sys.argv) == 3:
         if sys.argv[1][-6:] == '.conll':
             pass
         elif sys.argv[1][-6:] == '.jsonl':
-            jfile = codecs.open(sys.argv[1], encoding='utf-8')
+            jfile = open(sys.argv[1])
             for line in jfile:
                 reviews = read_json_line(line)
                 # print reviews
@@ -189,6 +197,6 @@ if len(sys.argv) == 3:
 else:
     arguments()
 
-
-s.commit()
+if s: # We have established a connection
+    s.commit()
 
