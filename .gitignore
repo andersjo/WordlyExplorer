@@ -4,10 +4,12 @@
 
 
 # Python bytecompiled files
+*.py
 *.py[cod]
 *$py.class
 
 # We only want specifically added text type files
+*README*
 *.txt
 *.xml
 *.properties
@@ -19,10 +21,42 @@
 *.js
 *.cfg
 *.ini
+*.da
+*.meta
+*.jsonl
+*.conll
+*.tex
+*.el
+*[t.]log*
+*.sh
+*.bat
+*.css
+*.MF
+*schema*
+*.vm
+*.xsl
+*.si
+*.liv
+*.fd[tx]
+*.fnm
+*.ti[mp]
+*.doc
+*.pos
+*.nv[dm]
+*.lock
+*segments_*
 
 # No compressed files
 *.zip
 *.jar
+*.war
+
 
 # No images
 *.jpg
+*.jpeg
+*.png
+*.ico
+*.gif
+*.swf
+*.svg
