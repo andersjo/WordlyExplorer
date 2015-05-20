@@ -2,7 +2,7 @@
 
 import flask
 import solr # Trying to switch to urllib3 (or 2) instead
-from urllib3 import *
+import urllib2
 import json
 import cgi, cgitb
 import vincent
@@ -155,17 +155,6 @@ def show_results():
 
     image_output = cStringIO.StringIO()
     image_output.write(img.decode('base64'))   # Write decoded image to buffer
-    print image_output
-    #plt.imshow(image_output)
-
-    #plt.imshow(data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png'])
-
-    heatmap = s.query('*:*', facet='true', facet_field=['city', 'location_rpt'], fq=['country:Denmark'],
-                      facet_heatmap='location_rpt', facet_heatmap_format='ints2D', #facet_heatmap_geom={'minX':8,'minY':54,'maxX':13,'maxY':58},
-                      facet_heatmap_distErrPct=0.15)
-
-    print 'results:', heatmap.facet_counts
-
 
     total_ages, total_gender, total_ageM, total_ageF = get_stats(data, dataM, dataF)
 
@@ -218,22 +207,20 @@ def show_results():
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
-        qresponse = s.query('text:det', rows=5, facet='true', facet_field=['gender', 'city'], fq=['country:Denmark'])
+        # Attempt using urllib2
 
-        hitslist = [[city, val] for city, val in qresponse.facet_counts[u'facet_fields'][u'city'].iteritems() if val > 0]
-        print 'how many cities again?', len(hitslist)
-        print hitslist
-        # print helper_scripts.locdat
-        # for line in hitslist:
-        #     print line
+        connection = urllib2.urlopen('http://localhost:8983/solr/trustpilot_reviews/select?facet=true&q=*:*&wt=json&facet.heatmap.format=png&facet.heatmap=location_rpt&facet.field=gender&facet.field=city&facet.heatmap.gridLevel=3') #&facet.heatmap.geom=["8 54" TO "13 58"]')
+        response = json.load(connection)
 
-        # print [range(8, 13),range(54,58)]
-        # facet_heatmap_geom="'8 54' TO '13 58'",
+        print 'this many', response['facet_counts']['facet_heatmaps']['location_rpt'][-1], "documents found."
 
+        img = response['facet_counts']['facet_heatmaps']['location_rpt'][-1]
 
+        image_output = cStringIO.StringIO()
+        image_output.write(img.decode('base64'))   # Write decoded image to buffer
 
 
-        # ["8 54" TO "13 58"],
+        # ["8 54" TO "13 58"]
 
 
         return flask.render_template('show_results.html', responses = [response_texts[0], response_texts[1]],
