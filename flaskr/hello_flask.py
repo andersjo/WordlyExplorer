@@ -28,19 +28,7 @@ sns.set()
 #sns.set_context("talk")
 # sns.palplot(sns.color_palette()) # This causes a bunch of error messages to be displayed...QPixmap: It is not safe to use pixmaps outside the GUI thread
 
-def make_country_codes():
-    codes = {}
-    reverse_cc = {}
-    ccfile = codecs.open('../data/iso_country_codes.csv', encoding='utf-8')
-    ccfile.next()
-    for line in ccfile:
-        cc, country = line.replace('"', '').strip('\r\n').strip().split(',')
-        codes[country] = cc
-        reverse_cc[cc] = country
-
-    return codes, reverse_cc
-
-country_codes, reverse_cc = make_country_codes()
+country_codes, reverse_cc = helper_scripts.make_country_codes()
 
 
 def make_age_bars():
@@ -76,20 +64,6 @@ def hist_ages_gender(term, ages_men, ages_women, total_men, total_women, min_age
     plt.close(fig) # Close figures to save mem
     return sio
 
-
-
-# def make_bars(distribution, labels, term = ''):
-#     fig = plt.figure()
-#     plt.title('# of hits for \"' + labels[0] + '\" and \"' + labels[1] + '\"')
-#     if len(term):
-#         plt.title('# of hits for \"' + labels[0] + '\" and \"' + labels[1] + '\" for \"' + term + '\"')
-#     plt.bar([1,2],distribution)
-#     plt.xticks([1.4,2.4], labels)
-#     sio = cStringIO.StringIO()
-#     plt.savefig(sio, format="jpg")
-#     plt.close(fig)
-#     return sio
-
 def get_stats(responses, responsesM, responsesF):
 
     genders = responses.facet_counts[u'facet_fields'][u'gender']
@@ -103,13 +77,13 @@ def do_query(query):
     frend = 89
     frgap = 10
     country = reverse_cc[request.form['country'][-2:]]
-    facet_fields=['gender', 'city']
+    facet_fields=['gender', 'location_rpt']
     geofcph = '{!geofilt pt=55.676,12.568 sfield=location d=25}'
     geofaarhus = '{!geofilt pt=56.157,10.21 sfield=location d=25}'
     filterq = ['country:\"' + country + '\"']
     filterqM = ['country:\"' + country + '\"', 'gender:M']
     filterqF = ['country:\"' + country + '\"', 'gender:F']
-    print request.form['region']
+    #print request.form['region']
     if request.form['region'] == 'cph':
         filterq.append(geofcph)
         filterqM.append(geofcph)
@@ -120,7 +94,6 @@ def do_query(query):
         filterqF.append(geofaarhus)
     response = s.query(query, rows=5, facet_heatmap='location_rpt', facet_heatmap_format='png', facet='true', facet_range=['age'],
                        facet_heatmap_gridLevel=3,#facet_heatmap_distErrPct=0.02,
-                       facet_heatmap_maxX=20,facet_heatmap_columns='512',
                        facet_range_start=frstart, facet_range_end=frend,
                        facet_range_gap=frgap, facet_field=facet_fields, fq=filterq)
     responseM = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend,
@@ -148,9 +121,9 @@ def show_results():
 
     _, data, dataM, dataF = do_query(query)
 
-    hitslist = [[city, val] for city, val in data.facet_counts[u'facet_fields'][u'city'].iteritems() if val > 0]
+    hitslist = [[city, val] for city, val in data.facet_counts[u'facet_fields'][u'location_rpt'].iteritems() if val > 0]
     print 'how many cities again?', len(hitslist)
-    print data.facet_counts
+    #print data.facet_counts
     img = data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png']
 
     image_output = cStringIO.StringIO()
@@ -198,17 +171,11 @@ def show_results():
         while len(genders) < 2:
             genders.append([0,0])
 
-        # gen_bars = [make_bars(genders[0], ['Male', 'Female'], term1), make_bars(genders[1], ['Male', 'Female'], term2)]
-        # distribution = make_bars(num_responses, [term1, term2])
-
-        #select = solr.SearchHandler(s, "/select")
-
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:M')
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
         # Attempt using urllib2
-
         connection = urllib2.urlopen('http://localhost:8983/solr/trustpilot_reviews/select?facet=true&q=*:*&wt=json&facet.heatmap.format=png&facet.heatmap=location_rpt&facet.field=gender&facet.field=city&facet.heatmap.gridLevel=3') #&facet.heatmap.geom=["8 54" TO "13 58"]')
         response = json.load(connection)
 
