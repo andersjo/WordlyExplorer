@@ -77,7 +77,7 @@ def do_query(query):
     frend = 89
     frgap = 10
     country = reverse_cc[request.form['country'][-2:]]
-    facet_fields=['gender', 'location_rpt']
+    facet_fields=['gender', 'nuts-3']
     geofcph = '{!geofilt pt=55.676,12.568 sfield=location d=25}'
     geofaarhus = '{!geofilt pt=56.157,10.21 sfield=location d=25}'
     filterq = ['country:\"' + country + '\"']
@@ -92,8 +92,8 @@ def do_query(query):
         filterq.append(geofaarhus)
         filterqM.append(geofaarhus)
         filterqF.append(geofaarhus)
-    response = s.query(query, rows=5, facet_heatmap='location_rpt', facet_heatmap_format='png', facet='true', facet_range=['age'],
-                       facet_heatmap_gridLevel=3,#facet_heatmap_distErrPct=0.02,
+    response = s.query(query, rows=5, facet_limit=1000, facet_heatmap='location_rpt', facet_heatmap_format='png', facet='true', facet_range=['age'],
+                       facet_heatmap_gridLevel=4, facet_heatmap_maxCells=2000000,
                        facet_range_start=frstart, facet_range_end=frend,
                        facet_range_gap=frgap, facet_field=facet_fields, fq=filterq)
     responseM = s.query(query, rows=5, facet='true', facet_range=['age'], facet_range_start=frstart, facet_range_end=frend,
@@ -117,13 +117,13 @@ def index():
 def show_results():
     """ Displays the results of our query at '/results'
     """
-    query = "text:*" # Remember to set which field to query on (text for review-centric, review for user-centric)
+    query = "*:*" # Remember to set which field to query on (text for review-centric, review for user-centric)
 
     _, data, dataM, dataF = do_query(query)
 
-    hitslist = [[city, val] for city, val in data.facet_counts[u'facet_fields'][u'location_rpt'].iteritems() if val > 0]
-    print 'how many cities again?', len(hitslist)
-    #print data.facet_counts
+    nuts3regions = [[nuts3, val] for nuts3, val in data.facet_counts[u'facet_fields'][u'nuts-3'].iteritems() if val > 0] # we dont want to run over all of the other countries
+
+    #print data.facet_counts[u'facet_fields'][u'nuts-3']
     img = data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png']
 
     image_output = cStringIO.StringIO()
@@ -141,7 +141,7 @@ def show_results():
     if request.method == 'POST':
         for i in range(2):
             box = 'searchbox' + str(i+1)
-            if request.form[box]:
+            if request.form[box]: # Ensure we have input in the given text field
                 term[i] = request.form[box]
                 response_texts[i], response, respM, respF = do_query(term_to_query(term[i]))
                 response_full.append(response)
@@ -161,8 +161,14 @@ def show_results():
         # ages, genders = zip(get_stats(response_full[0]), get_stats(response_full[1]))
 
         age_gen_hist = []
+        regionstats = [[],[]]
         for i in range(len(response_full)):
             age_gen_hist.append(hist_ages_gender(term[i], agesM[i], agesF[i], total_ageM, total_ageF))
+            curRegion = response_full[i].facet_counts[u'facet_fields'][u'nuts-3']
+            regionstats[i] = [[region[0], float(curRegion[region[0]])/region[1]] for region in nuts3regions]
+
+        print regionstats
+
         while len(age_gen_hist) < 2:
             #age_gen_hist.append(cStringIO.StringIO()) # TODO: REMEMBER ME!
             age_gen_hist.append(image_output)
@@ -170,6 +176,9 @@ def show_results():
         genders = [[genders[i][u'M'], genders[i][u'F']] for i in range(len(response_full))]
         while len(genders) < 2:
             genders.append([0,0])
+
+
+
 
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:M')
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
