@@ -2,6 +2,7 @@
 
 import flask
 import solr # Trying to switch to urllib3 (or 2) instead
+import urllib
 import urllib2
 import json
 import cgi, cgitb
@@ -169,6 +170,21 @@ def show_results():
 
         print regionstats
 
+
+        # Attempt using urllib2
+        coordbox = urllib.quote_plus('["8 54" TO "16 58"]')
+        connection = urllib2.urlopen('http://localhost:8983/solr/trustpilot_reviews/select?facet=true&q=*:*&wt=json&facet.heatmap.format=png&facet.heatmap=location_rpt&facet.field=gender&facet.field=city&facet.heatmap.gridLevel=5&facet.heatmap.maxCells=20000000&facet.heatmap.geom='+coordbox)
+        response = json.load(connection)
+
+        #print 'this many', response['facet_counts']['facet_heatmaps']['location_rpt'][-1], "documents found."
+
+        img = response['facet_counts']['facet_heatmaps']['location_rpt'][-1]
+
+        image_output = cStringIO.StringIO()
+        image_output.write(img.decode('base64'))   # Write decoded image to buffer
+
+
+
         while len(age_gen_hist) < 2:
             #age_gen_hist.append(cStringIO.StringIO()) # TODO: REMEMBER ME!
             age_gen_hist.append(image_output)
@@ -184,16 +200,6 @@ def show_results():
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
-        # Attempt using urllib2
-        connection = urllib2.urlopen('http://localhost:8983/solr/trustpilot_reviews/select?facet=true&q=*:*&wt=json&facet.heatmap.format=png&facet.heatmap=location_rpt&facet.field=gender&facet.field=city&facet.heatmap.gridLevel=3') #&facet.heatmap.geom=["8 54" TO "13 58"]')
-        response = json.load(connection)
-
-        print 'this many', response['facet_counts']['facet_heatmaps']['location_rpt'][-1], "documents found."
-
-        img = response['facet_counts']['facet_heatmaps']['location_rpt'][-1]
-
-        image_output = cStringIO.StringIO()
-        image_output.write(img.decode('base64'))   # Write decoded image to buffer
 
 
         # ["8 54" TO "13 58"]
