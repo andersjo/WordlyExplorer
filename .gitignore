@@ -1,12 +1,13 @@
 # Let git ignore some filetypes
 
-# For now, only include what you are told!
-
+# Ignore certain folders
+data/*
+solr-*
 
 # Python bytecompiled files
-*.py
-*.py[cod]
+*.py[#cod]
 *$py.class
+gfxtest.py
 
 # We only want specifically added text type files
 *README*
@@ -18,7 +19,6 @@
 *.html
 *.[ct]sv
 *.json
-*.js
 *.cfg
 *.ini
 *.da
