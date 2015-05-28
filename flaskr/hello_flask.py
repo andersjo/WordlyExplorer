@@ -10,7 +10,6 @@ import vincent
 import codecs
 import helper_scripts
 import itertools
-from kartograph import Kartograph
 
 from plotting import *
 from itertools import islice
@@ -147,7 +146,7 @@ def show_results():
         image_output = cStringIO.StringIO()
         image_output.write(img.decode('base64'))   # Write decoded image to buffer
 
-
+        create_map('dnk')
 
         while len(age_gen_hist) < 2:
             #age_gen_hist.append(cStringIO.StringIO()) # TODO: REMEMBER ME!
@@ -158,15 +157,10 @@ def show_results():
             genders.append([0,0])
 
 
-
-
-        # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:M')
         # print 'this is a select: ', s.query('text:*', facet='true', facet_fields=['gender', 'age', 'location'], fq='gender:F').numFound
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
 
-
-        # ["8 54" TO "13 58"]
 
 
         return flask.render_template('show_results.html', responses = [response_texts[0], response_texts[1]],
