@@ -41,15 +41,3 @@ def hist_ages_gender(term, ages_men, ages_women, total_men, total_women, min_age
     plt.close(fig) # Close figures to save mem
     return sio
 
-def create_map(country):
-    cfg = {
-        "layers": {
-            "mylayer": {
-                "src": "../data/DNK_adm/DNK_adm1.shp",
-                "simplify": 3
-            }
-        }
-    }
-
-    K = Kartograph()
-    K.generate(cfg, outfile='test.svg')

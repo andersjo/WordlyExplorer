@@ -135,18 +135,16 @@ def show_results():
 
 
         # Attempt using urllib2
-        coordbox = urllib.quote_plus('["8 54" TO "16 58"]')
-        connection = urllib2.urlopen('http://localhost:8983/solr/trustpilot_reviews/select?facet=true&q=*:*&wt=json&facet.heatmap.format=png&facet.heatmap=location_rpt&facet.field=gender&facet.field=city&facet.heatmap.gridLevel=5&facet.heatmap.maxCells=20000000&facet.heatmap.geom='+coordbox)
-        response = json.load(connection)
+        # coordbox = urllib.quote_plus('["8 54" TO "16 58"]')
+        # connection = urllib2.urlopen('http://localhost:8983/solr/trustpilot_reviews/select?facet=true&q=*:*&wt=json&facet.heatmap.format=png&facet.heatmap=location_rpt&facet.field=gender&facet.field=city&facet.heatmap.gridLevel=5&facet.heatmap.maxCells=20000000&facet.heatmap.geom='+coordbox)
+        # response = json.load(connection)
 
-        #print 'this many', response['facet_counts']['facet_heatmaps']['location_rpt'][-1], "documents found."
+        # #print 'this many', response['facet_counts']['facet_heatmaps']['location_rpt'][-1], "documents found."
 
-        img = response['facet_counts']['facet_heatmaps']['location_rpt'][-1]
+        # img = response['facet_counts']['facet_heatmaps']['location_rpt'][-1]
 
-        image_output = cStringIO.StringIO()
-        image_output.write(img.decode('base64'))   # Write decoded image to buffer
-
-        create_map('dnk')
+        # image_output = cStringIO.StringIO()
+        # image_output.write(img.decode('base64'))   # Write decoded image to buffer
 
         while len(age_gen_hist) < 2:
             #age_gen_hist.append(cStringIO.StringIO()) # TODO: REMEMBER ME!
