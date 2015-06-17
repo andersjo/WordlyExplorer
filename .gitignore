@@ -52,11 +52,11 @@ gfxtest.py
 *.war
 
 
-# No images
+# No images, apart from .svg
 *.jpg
 *.jpeg
 *.png
 *.ico
 *.gif
 *.swf
-*.svg
+
