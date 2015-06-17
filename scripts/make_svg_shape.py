@@ -38,3 +38,4 @@ for c in country:
     print 'Creating map for:', c
     if c != 'FR':
         create_map(c)
+        print 'FR map has bugs, cant create it'

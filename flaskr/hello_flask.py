@@ -159,13 +159,14 @@ def show_results():
         # print s.query('*:*', facet='true', facet_field=['gender', 'age', 'location']).facet_counts[u'facet_fields'][u'gender']
 
 
-
+        map_location = request.form['country'][-2:] + '.svg'
+        print map_location
 
         return flask.render_template('show_results.html', responses = [response_texts[0], response_texts[1]],
                                      queries = [term[0], term[1]], distribution = num_responses,
                                      agegenhist0 = age_gen_hist[0], agegenhist1 = age_gen_hist[1],
                                      genders = genders, country = request.form['country'],
-                                     region = request.form['region'])
+                                     region = request.form['region'], maploc = map_location)
     else:
         return flask.render_template('trustpilot.html', queries = [])
 

@@ -1,24 +1,73 @@
 {% extends "trustpilot.html" %}
 {% block results %}
-<h2>Results</h2>
-<p>Number of results for term 1: {{distribution[0]}}</p>
-<p>Number of results for term 2: {{distribution[1]}}</p>
 
-<p>Number of responses from males, term 1: {{genders[0][0]}}</p>
-<p>Number of responses from females, term 1: {{genders[0][1]}}</p>
-<p>Number of responses from males, term 2: {{genders[1][0]}}</p>
-<p>Number of responses from females, term 2: {{genders[1][1]}}</p>
-<img src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
+    <h2>Results</h2>
+    <p>Number of results for term 1: {{distribution[0]}}</p>
+    <p>Number of results for term 2: {{distribution[1]}}</p>
 
-<img src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
+    <p>Number of responses from males, term 1: {{genders[0][0]}}</p>
+    <p>Number of responses from females, term 1: {{genders[0][1]}}</p>
+    <p>Number of responses from males, term 2: {{genders[1][0]}}</p>
+    <p>Number of responses from females, term 2: {{genders[1][1]}}</p>
 
-<h2>Concordances</h2>
+    <br/>
+
+    <h2>Concordances</h2>
 
 {% for hit in responses[0]%}
-<p>{{ hit }}</p>
-{% endfor %}
+    <p>{{ hit }}</p>
+    {% endfor %}
 {% for hit in responses[1] %}
-<p>{{ hit }}</p>
-{% endfor %}
+    <p>{{ hit }}</p>
+    {% endfor %}
+
+    <br/>
+
+    <h2>Graphics</h2>
+    <img src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
+
+    <img src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
+
+    <div id="map">&nbsp;</div>
+
+    <style type="text/css">
+    .mapnail {
+        display: inline-block;
+        width: 33%;
+    }
+</style>
+
+    <script type="text/javascript">
+    $(function() {
+        var map,
+            colorscale,
+            // data = {},
+            w = $('#map').parent().width();
+
+
+        $.fn.qtip.defaults.style.classes = 'ui-tooltip-bootstrap';
+        $.fn.qtip.defaults.style.def = false;
+
+        $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
+
+
+            var div = $('<div />').addClass('mapnail');
+            $('#map').append(div);
+            var map = kartograph.map(div, w * 0.32, w/3),
+                color = chroma.scale('Greens').domain([0, 100]);
+
+            map.setMap(svg);
+
+            map.addLayer('nutsregions', {
+                styles: {
+                    'stroke-width': 0.7,
+                    fill: '#aaa',
+                    stroke: '#000'
+                }
+            });
+        });
+    });
+</script>
+
 
 {% endblock %}
