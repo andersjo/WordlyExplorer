@@ -1,72 +1,158 @@
 {% extends "trustpilot.html" %}
 {% block results %}
 
-    <h2>Results</h2>
-    <p>Number of results for term 1: {{distribution[0]}}</p>
-    <p>Number of results for term 2: {{distribution[1]}}</p>
+<h2>Results</h2>
+<p>Number of results for term 1: {{distribution[0]}}</p>
+<p>Number of results for term 2: {{distribution[1]}}</p>
 
-    <p>Number of responses from males, term 1: {{genders[0][0]}}</p>
-    <p>Number of responses from females, term 1: {{genders[0][1]}}</p>
-    <p>Number of responses from males, term 2: {{genders[1][0]}}</p>
-    <p>Number of responses from females, term 2: {{genders[1][1]}}</p>
+<p>Number of responses from males, term 1: {{genders[0][0]}}</p>
+<p>Number of responses from females, term 1: {{genders[0][1]}}</p>
+<p>Number of responses from males, term 2: {{genders[1][0]}}</p>
+<p>Number of responses from females, term 2: {{genders[1][1]}}</p>
 
-    <br/>
+<br/>
 
-    <h2>Concordances</h2>
+<h2>Concordances</h2>
 
 {% for hit in responses[0]%}
-    <p>{{ hit }}</p>
-    {% endfor %}
+<p>{{ hit }}</p>
+{% endfor %}
 {% for hit in responses[1] %}
-    <p>{{ hit }}</p>
-    {% endfor %}
+<p>{{ hit }}</p>
+{% endfor %}
 
-    <br/>
+<br/>
 
-    <h2>Graphics</h2>
-    <img src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
+<h2>Graphics</h2>
+<img src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
 
-    <img src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
+<img src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
 
-    <div id="map">&nbsp;</div>
+<div id="map0">&nbsp;</div>
+0%
+<div id="gradient">&nbsp;</div>
+100%
+<br/>
+<div id="map1">&nbsp;</div>
 
-    <style type="text/css">
-    .mapnail {
-        display: inline-block;
-        width: 33%;
-    }
+<style type="text/css">
+  .mapnail {
+  display: inline-block;
+  width: 33%;
+  }
+
+  div.gradient {
+  padding: 10px 10px 6px;
+  border-radius:4px;
+  background: Gainsboro;
+  text-align: center;
+  }
+
+  div.gradient div {
+  display: inline-block;
+  height: 50px;
+  color: rgba(0,0,0,0);
+  }
+
 </style>
 
-    <script type="text/javascript">
-    $(function() {
-        var map,
-            colorscale,
-            // data = {},
-            w = $('#map').parent().width();
+<script type="text/javascript">
+  var steps = 1000,
+      mycolorscale = ['#8b0000','#ff1493','#ffffe0','#008000','#0000ff','#800080','#ffa500','#ff0000','#90ee90','#008080'],
+      color = chroma.scale(mycolorscale).domain([0,0.8]);
 
 
-        $.fn.qtip.defaults.style.classes = 'ui-tooltip-bootstrap';
-        $.fn.qtip.defaults.style.def = false;
+  $(function() {
+      var map0,
+          colorscale,
+          nutsregions = {{ jsonRegStats[0]|tojson }},
+          w = $('#map0').parent().width();
 
-        $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
+      $.fn.qtip.defaults.style.classes = 'ui-tooltip-bootstrap';
+      $.fn.qtip.defaults.style.def = true;
+
+      $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
 
 
-            var div = $('<div />').addClass('mapnail');
-            $('#map').append(div);
-            var map = kartograph.map(div, w * 0.32, w/3),
-                color = chroma.scale('Greens').domain([0, 100]);
+          var div = $('<div />').addClass('mapnail');
+  $('#map0').append(div);
+  var map0 = kartograph.map(div, w * 0.4);
 
-            map.setMap(svg);
+  map0.setMap(svg);
+  map0.addLayer('nutsregions', {
+  styles: {
+  'stroke-width': 0.7,
+  fill: function(d) { return color(nutsregions[d['nuts-id']]); },
+  stroke: '#000'
+  },
+  tooltips: function(d) {
+  return ['Region: ' + d['nuts-id'], Math.round(nutsregions[d['nuts-id']] * 100000)/1000 + ' %'];
+  }
 
-            map.addLayer('nutsregions', {
-                styles: {
-                    'stroke-width': 0.7,
-                    fill: '#aaa',
-                    stroke: '#000'
-                }
-            });
-        });
-    });
+  });
+  });
+  });
+
+  $(function() {
+  var map1,
+  colorscale,
+  nutsregions = {{ jsonRegStats[1]|tojson }},
+  w = $('#map1').parent().width();
+
+  $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
+
+  var div = $('<div />').addClass('mapnail');
+  $('#map1').append(div);
+  var map1 = kartograph.map(div, w * 0.4);
+
+  map1.setMap(svg);
+  map1.addLayer('nutsregions', {
+  styles: {
+  'stroke-width': 0.7,
+  fill: function(d) { return color(nutsregions[d['nuts-id']]); },
+  stroke: '#000'
+  },
+  tooltips: function(d) {
+  return ['Region: ' + d['nuts-id'], Math.round(nutsregions[d['nuts-id']] * 100000)/1000 + ' %'];
+  }
+  });
+  showScale(color, steps);
+  });
+  });
+
+  function showScale(cs, steps) {
+  var c = $('<div />')
+  .addClass('gradient')
+  .appendTo('#gradient');
+
+  var cols = [];
+  _.range(steps).forEach(function(i) {
+  var t = i/(steps-1);
+  $('<div />').appendTo(c)
+  .css({
+  width: (100/steps)+'%',
+  background: cs(t).hex()
+  });
+  cols.push(cs(t).hex());
+  });
+
+
+  $('<div id="exports" />').appendTo('#gradient');
+
+  var list = '\'' + cols.join('\',\'') + '\'',
+  colors = cols.join(' '),
+  hexlist = cols.map(function (c) { return c.replace('#','0x'); }).join(',');
+
+  var link = location.href;
+
+  var range = _.range(steps).map(function(s) {
+  return 'min+'+(s+1)+'*d';
+  });
+
+  var d3_syntax = 'd3.scale.threshold()\n    .range(['+list+']);',
+  d3_syntax_full = 'function palette(min, max) {\n    var d = (max-min)/'+steps+';\n' + '    return d3.scale.threshold()\n        .range(['+list+'])\n        .domain(['+range.join(',')+']);\n}';
+
+  }
 </script>
 
 
