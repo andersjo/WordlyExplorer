@@ -86,8 +86,7 @@ def show_results():
 
     _, data, dataM, dataF = do_query(query)
 
-    nuts3regions = [[nuts3, val] for nuts3, val in data.facet_counts[u'facet_fields'][u'nuts-3'].iteritems()
-                    if nuts3[:2] == request.form['country'][-2:]] # we dont want to run over all of the other countries
+    nuts3regions = [[nuts3, val] for nuts3, val in data.facet_counts[u'facet_fields'][u'nuts-3'].iteritems() if val > 0 ] # we dont want to run over all of the other countries
 
     #print data.facet_counts[u'facet_fields'][u'nuts-3']
     #img = data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png'] # Get heatmap image

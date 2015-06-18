@@ -29,9 +29,15 @@
 <img src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
 
 <div id="map0">&nbsp;</div>
-0%
 <div id="gradient">&nbsp;</div>
-100%
+
+
+<p style="text-align:left;">
+  0%
+  <span style="float:right;">100%</span>
+</p>
+
+
 <br/>
 <div id="map1">&nbsp;</div>
 
@@ -76,7 +82,7 @@
 
           var div = $('<div />').addClass('mapnail');
   $('#map0').append(div);
-  var map0 = kartograph.map(div, w * 0.4);
+  var map0 = kartograph.map(div, w * 0.3);
 
   map0.setMap(svg);
   map0.addLayer('nutsregions', {
@@ -103,7 +109,7 @@
 
   var div = $('<div />').addClass('mapnail');
   $('#map1').append(div);
-  var map1 = kartograph.map(div, w * 0.4);
+  var map1 = kartograph.map(div, w * 0.25);
 
   map1.setMap(svg);
   map1.addLayer('nutsregions', {
