@@ -1,46 +1,5 @@
 {% extends "trustpilot.html" %}
-{% block results %}
-
-<h2>Results</h2>
-<p>Number of results for term 1: {{distribution[0]}}</p>
-<p>Number of results for term 2: {{distribution[1]}}</p>
-
-<p>Number of responses from males, term 1: {{genders[0][0]}}</p>
-<p>Number of responses from females, term 1: {{genders[0][1]}}</p>
-<p>Number of responses from males, term 2: {{genders[1][0]}}</p>
-<p>Number of responses from females, term 2: {{genders[1][1]}}</p>
-
-<br/>
-
-<h2>Concordances</h2>
-
-{% for hit in responses[0]%}
-<p>{{ hit }}</p>
-{% endfor %}
-{% for hit in responses[1] %}
-<p>{{ hit }}</p>
-{% endfor %}
-
-<br/>
-
-<h2>Graphics</h2>
-<img src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
-
-<img src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
-
-<div id="map0">&nbsp;</div>
-<div id="gradient">&nbsp;</div>
-
-
-<p style="text-align:left;">
-  0%
-  <span style="float:right;">100%</span>
-</p>
-
-
-<br/>
-<div id="map1">&nbsp;</div>
-
+{% block resultcommon %}
 <style type="text/css">
   .mapnail {
   display: inline-block;
@@ -62,74 +21,14 @@
 
 </style>
 
+
 <script type="text/javascript">
   var steps = 1000,
       mycolorscale = ['#8b0000','#ff1493','#ffffe0','#008000','#0000ff','#800080','#ffa500','#ff0000','#90ee90','#008080'],
-      color = chroma.scale(mycolorscale).domain([0,0.8]);
-
-
-  $(function() {
-      var map0,
-          colorscale,
-          nutsregions = {{ jsonRegStats[0]|tojson }},
-          w = $('#map0').parent().width();
-
-      $.fn.qtip.defaults.style.classes = 'ui-tooltip-bootstrap';
-      $.fn.qtip.defaults.style.def = true;
-
-      $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
-
-
-          var div = $('<div />').addClass('mapnail');
-  $('#map0').append(div);
-  var map0 = kartograph.map(div, w * 0.3);
-
-  map0.setMap(svg);
-  map0.addLayer('nutsregions', {
-  styles: {
-  'stroke-width': 0.7,
-  fill: function(d) { return color(nutsregions[d['nuts-id']]); },
-  stroke: '#000'
-  },
-  tooltips: function(d) {
-  return ['Region: ' + d['nuts-id'], Math.round(nutsregions[d['nuts-id']] * 100000)/1000 + ' %'];
-  }
-
-  });
-  });
-  });
-
-  $(function() {
-  var map1,
-  colorscale,
-  nutsregions = {{ jsonRegStats[1]|tojson }},
-  w = $('#map1').parent().width();
-
-  $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
-
-  var div = $('<div />').addClass('mapnail');
-  $('#map1').append(div);
-  var map1 = kartograph.map(div, w * 0.25);
-
-  map1.setMap(svg);
-  map1.addLayer('nutsregions', {
-  styles: {
-  'stroke-width': 0.7,
-  fill: function(d) { return color(nutsregions[d['nuts-id']]); },
-  stroke: '#000'
-  },
-  tooltips: function(d) {
-  return ['Region: ' + d['nuts-id'], Math.round(nutsregions[d['nuts-id']] * 100000)/1000 + ' %'];
-  }
-  });
-  showScale(color, steps);
-  });
-  });
+      color = chroma.scale(mycolorscale).domain([0,1]);
 
   function showScale(cs, steps) {
-  var c = $('<div />')
-  .addClass('gradient')
-  .appendTo('#gradient');
+      var c = $('<div />').addClass('gradient').appendTo('#gradient');
 
   var cols = [];
   _.range(steps).forEach(function(i) {
@@ -160,6 +59,132 @@
 
   }
 </script>
+{% endblock %}
+
+{% block results0 %}
+
+<h2>Results</h2>
+<p>Number of results for term 1: {{distribution[0]}}</p>
+
+<p>Number of responses from males, term 1: {{genders[0][0]}}</p>
+<p>Number of responses from females, term 1: {{genders[0][1]}}</p>
+
+<br/>
+{% endblock %}
+
+{% block concordances0 %}
+<h2>Concordances</h2>
+
+{% for hit in responses[0]%}
+<p>{{ hit }}</p>
+{% endfor %}
+<br/>
+{% endblock %}
+
+{% block graphics0 %}
+<h2>Graphics</h2>
+<img width="90%" src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
+
+<div id="map0">&nbsp;</div>
+
+<script type="text/javascript">
+
+  $(function() {
+      var map0,
+          colorscale,
+          nutsregions = {{ jsonRegStats[0]|tojson }},
+          w = $('#map0').parent().width();
+
+      $.fn.qtip.defaults.style.classes = 'ui-tooltip-bootstrap';
+      $.fn.qtip.defaults.style.def = true;
+
+      $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
 
 
+          var div = $('<div />').addClass('mapnail');
+  $('#map0').append(div);
+  var map0 = kartograph.map(div, w * 0.6);
+
+  map0.setMap(svg);
+  map0.addLayer('nutsregions', {
+  styles: {
+  'stroke-width': 0.7,
+  fill: function(d) { return color(nutsregions[d['nuts-id']]); },
+  stroke: '#000'
+  },
+  tooltips: function(d) {
+  return ['Region: ' + d['nuts-id'], Math.round(nutsregions[d['nuts-id']] * 100000)/1000 + ' %'];
+  }
+
+  });
+  });
+  });
+</script>
+{% endblock %}
+
+{% block results1 %}
+<h2>Results</h2>
+<p>Number of results for term 2: {{distribution[1]}}</p>
+
+<p>Number of responses from males, term 2: {{genders[1][0]}}</p>
+<p>Number of responses from females, term 2: {{genders[1][1]}}</p>
+<br/>
+{% endblock %}
+
+{% block concordances1 %}
+<h2>Concordances</h2>
+
+{% for hit in responses[1] %}
+<p>{{ hit }}</p>
+{% endfor %}
+<br/>
+{% endblock %}
+
+{% block graphics1 %}
+<h2>Graphics</h2>
+<img width="90%" src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
+<br/>
+<div id="map1">&nbsp;</div>
+<br/>
+
+<script type="text/javascript">
+  $(function() {
+      var map1,
+          colorscale,
+          nutsregions = {{ jsonRegStats[1]|tojson }},
+          w = $('#map1').parent().width();
+
+      $.get("{{ url_for('static', filename='img/mapSVGs/' + maploc) }}", function(svg) {
+
+          var div = $('<div />').addClass('mapnail');
+  $('#map1').append(div);
+  var map1 = kartograph.map(div, w * 0.6);
+
+  map1.setMap(svg);
+  map1.addLayer('nutsregions', {
+  styles: {
+  'stroke-width': 0.7,
+  fill: function(d) { return color(nutsregions[d['nuts-id']]); },
+  stroke: '#000'
+  },
+  tooltips: function(d) {
+  return ['Region: ' + d['nuts-id'], Math.round(nutsregions[d['nuts-id']] * 100000)/1000 + ' %'];
+  }
+  });
+  });
+  });
+</script>
+{% endblock %}
+
+{% block scale %}
+<br/>
+<script type="text/javascript">
+  $(function() {  showScale(color, steps); });
+</script>
+
+<div id="gradient">&nbsp;</div>
+<p style="text-align:left;">
+  0%
+  <span style="float:right;">100%</span>
+</p>
 {% endblock %}

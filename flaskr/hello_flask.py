@@ -48,14 +48,14 @@ def do_query(query):
     filterqM = ['country:\"' + country + '\"', 'gender:M']
     filterqF = ['country:\"' + country + '\"', 'gender:F']
     #print request.form['region']
-    if request.form['region'] == 'cph':
-        filterq.append(geofcph)
-        filterqM.append(geofcph)
-        filterqF.append(geofcph)
-    elif request.form['region'] == 'aarhus':
-        filterq.append(geofaarhus)
-        filterqM.append(geofaarhus)
-        filterqF.append(geofaarhus)
+    # if request.form['region'] == 'cph':
+    #     filterq.append(geofcph)
+    #     filterqM.append(geofcph)
+    #     filterqF.append(geofcph)
+    # elif request.form['region'] == 'aarhus':
+    #     filterq.append(geofaarhus)
+    #     filterqM.append(geofaarhus)
+    #     filterqF.append(geofaarhus)
     response = s.query(query, rows=5, facet_limit=1000, facet='true', facet_range=['age'],
                        #facet_heatmap='location_rpt', facet_heatmap_format='png', # Heatmap
                        #facet_heatmap_gridLevel=4, facet_heatmap_maxCells=2000000, # Heatmap
@@ -132,11 +132,8 @@ def show_results():
             curRegion = response_full[i].facet_counts[u'facet_fields'][u'nuts-3']
             regionstats[i] = {region[0]: float(curRegion[region[0]])/region[1] for region in nuts3regions}
 
-        print 'regional stats:', regionstats
+        #print 'regional stats:', regionstats
 
-        jsonRegion = json.dumps(regionstats[0])
-
-        print jsonRegion
 
         # Attempt using urllib2
         # coordbox = urllib.quote_plus('["8 54" TO "16 58"]')
@@ -170,7 +167,7 @@ def show_results():
                                      queries = [term[0], term[1]], distribution = num_responses,
                                      agegenhist0 = age_gen_hist[0], agegenhist1 = age_gen_hist[1],
                                      genders = genders, country = request.form['country'],
-                                     region = request.form['region'], maploc = map_location, jsonRegStats = regionstats)
+                                     maploc = map_location, jsonRegStats = regionstats)
     else:
         return flask.render_template('trustpilot.html', queries = [])
 

@@ -8,7 +8,7 @@
 
     <!-- Bootstrap -->
     <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" />
-
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/setup.css') }}" />
     <!-- Setting up Kartograph -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery.qtip.css') }}" />
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.11.3.min.js') }}"></script>
@@ -20,36 +20,69 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/underscore-min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
-  <body>
+    {% block resultcommon %}{% endblock %}
 
-    <h1>Language Variation</h1>
+    <body>
+      <div style="width:100%;"> <!-- Main Div -->
+        <h1>Language Variation</h1>
 
-    <h2>Target Variables</h2>
-
-
-    <form name="search" action="/results" method="post">
-      <p>
-        Select a country and language:
-        <select name="country" id="country">
-          <option {% if country == "da-DK" %} selected="selected" {% endif %}} value="da-DK">da-DK</option>
-          <option {% if country == "en-GB" %} selected="selected" {% endif %}} value="en-GB">en-GB</option>
-        </select>
-      </p>
-      <p>Please enter the first form of the variant(s): <input type="text" name="searchbox1" value="{{queries[0]}}"></p>
-      <p>Please enter the second form of the variant(s): <input type="text" name="searchbox2" value="{{queries[1]}}"></p>
-      <p>
-        Select a region (Denmark only):
-        <select name="region" id="region">
-          <option {% if region == "all" %} selected="selected" {% endif %}} value="all">Whole country</option>
-          <option {% if region == "cph" %} selected="selected" {% endif %}} value="cph">Copenhagen</option>
-          <option {% if region == "aarhus" %} selected="selected" {% endif %}} value="aarhus">Århus</option>
-        </select>
-      </p>
-      <input type="submit" value="Submit">
-    </form>
-    <hr>
+        <h2>Target Variables</h2>
 
 
-    {% block results %}{% endblock %}
-  </body>
+        <form name="search" action="/results" method="post">
+          <p>
+            Select a country and language:
+            <select name="country" id="country">
+              <option {% if country == "da-DK" %} selected="selected" {% endif %}} value="da-DK">da-DK</option>
+              <option {% if country == "en-GB" %} selected="selected" {% endif %}} value="en-GB">en-GB</option>
+            </select>
+            <hr/>
+          </p>
+          <div name="input">
+            <div class="split">
+              <p>Please enter the first form of the variant(s): <input type="text" name="searchbox1" value="{{queries[0]}}"></p>
+              <input type="submit" value="Submit">
+            </div>
+            <div class="split">
+              <p>Please enter the second form of the variant(s): <input type="text" name="searchbox2" value="{{queries[1]}}"></p>
+              <input type="submit" value="Submit">
+            </div>
+            <div class="clear"></div>
+          </div>
+          <div name="results" style="width:100%;">
+            <div class="split">
+              {% block results0 %}{% endblock %}
+            </div>
+            <div class="split">
+              {% block results1 %}{% endblock %}
+            </div>
+            <div class="clear"></div>
+          </div>
+          <div name="concordances" style="width:100%;">
+            <div class="split">
+              {% block concordances0 %}{% endblock %}
+            </div>
+            <div class="split">
+              {% block concordances1 %}{% endblock %}
+            </div>
+            <div class="clear"></div>
+          </div>
+          <div name="graphics" style="width:100%;">
+            <div class="split">
+              {% block graphics0 %}{% endblock %}
+            </div>
+            <div class="split">
+              {% block graphics1 %}{% endblock %}
+            </div>
+            <div class="clear"></div>
+          </div>
+        </form>
+      </div>
+
+
+    </body>
+
+    {% block scale %}{% endblock %}
+
+
 </html>
