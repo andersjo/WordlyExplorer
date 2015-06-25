@@ -33,8 +33,8 @@
           <p>
             Select a country and language:
             <select name="country" id="country">
-              <option {% if country == "da-DK" %} selected="selected" {% endif %}} value="da-DK">da-DK</option>
-              <option {% if country == "en-GB" %} selected="selected" {% endif %}} value="en-GB">en-GB</option>
+              <option {% if country == "da-DK" %} selected="selected" {% endif %} value="da-DK">da-DK</option>
+              <option {% if country == "en-GB" %} selected="selected" {% endif %} value="en-GB">en-GB</option>
             </select>
             <hr/>
           </p>
@@ -67,15 +67,29 @@
             </div>
             <div class="clear"></div>
           </div>
-          <div name="graphics" style="width:100%;">
+          <div name="graphics0" style="width:100%;">
             <div class="split">
-              {% block graphics0 %}{% endblock %}
+              {% block graphics00 %}{% endblock %}
+              <div class="clear"></div>
             </div>
             <div class="split">
-              {% block graphics1 %}{% endblock %}
+              {% block graphics10 %}{% endblock %}
+              <div class="clear"></div>
             </div>
             <div class="clear"></div>
           </div>
+          <div name="graphics1" style="width:100%;">
+            <div class="split">
+              {% block graphics01 %}{% endblock %}
+              <div class="clear"></div>
+            </div>
+            <div class="split">
+              {% block graphics11 %}{% endblock %}
+              <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+          </div>
+
         </form>
       </div>
 

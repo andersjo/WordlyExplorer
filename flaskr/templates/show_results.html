@@ -81,10 +81,15 @@
 <br/>
 {% endblock %}
 
-{% block graphics0 %}
+{% block graphics00 %}
 <h2>Graphics</h2>
+{% if not agegenhist0 == 0 %}
 <img width="90%" src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
+{% endif %}
+{% endblock %}
 
+{% block graphics01 %}
+{% if not jsonRegStats[0] == {0 : 0} %}
 <div id="map0">&nbsp;</div>
 
 <script type="text/javascript">
@@ -120,6 +125,7 @@
   });
   });
 </script>
+{% endif %}
 {% endblock %}
 
 {% block results1 %}
@@ -140,12 +146,17 @@
 <br/>
 {% endblock %}
 
-{% block graphics1 %}
+{% block graphics10 %}
 <h2>Graphics</h2>
+
+{% if not agegenhist1 == 0 %}
 <img width="90%" src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
-<br/>
+{% endif %}
+{% endblock %}
+
+{% block graphics11 %}
+{% if not jsonRegStats[1] == {0 : 0} %}
 <div id="map1">&nbsp;</div>
-<br/>
 
 <script type="text/javascript">
   $(function() {
@@ -174,6 +185,7 @@
   });
   });
 </script>
+{% endif %}
 {% endblock %}
 
 {% block scale %}
