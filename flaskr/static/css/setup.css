@@ -9,8 +9,18 @@ div.clear {
     height: 1px;
 }
 
-div.split {
+div.splitl {
     float:left;
-    width:47.5%;
-    margin-right:2.5%;
+    width:47.9%;
+    padding-right:2%;
+    border-right: thin solid #cccccc;
+}
+
+div.splitr {
+    float:right;
+    width:47.9%;
+    margin-left:2%;
+
+div.main {
+    width: 100%;
 }

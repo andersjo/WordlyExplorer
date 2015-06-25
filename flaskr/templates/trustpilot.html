@@ -22,8 +22,8 @@
 
     {% block resultcommon %}{% endblock %}
 
-    <body>
-      <div style="width:100%;"> <!-- Main Div -->
+    <body style="margin: 2.5%">
+      <div class="main"> <!-- Main Div -->
         <h1>Language Variation</h1>
 
         <h2>Target Variables</h2>
@@ -36,54 +36,57 @@
               <option {% if country == "da-DK" %} selected="selected" {% endif %} value="da-DK">da-DK</option>
               <option {% if country == "en-GB" %} selected="selected" {% endif %} value="en-GB">en-GB</option>
             </select>
-            <hr/>
+          <p>Please enter the first variant(s): <input type="text" name="searchbox1" value="{{queries[0]}}">
+            second variant(s): <input type="text" name="searchbox2" value="{{queries[1]}}"></p>
+          <input type="submit" value="Submit">
+          <hr/>
           </p>
-          <div name="input">
-            <div class="split">
-              <p>Please enter the first form of the variant(s): <input type="text" name="searchbox1" value="{{queries[0]}}"></p>
-              <input type="submit" value="Submit">
-            </div>
-            <div class="split">
-              <p>Please enter the second form of the variant(s): <input type="text" name="searchbox2" value="{{queries[1]}}"></p>
-              <input type="submit" value="Submit">
-            </div>
+          <div name="titles" style="width:100%">
+            <div class="splitl"><h2 align="center">{{queries[0]}}</h2></div>
+            <div class="splitr"><h2 align="center">{{queries[1]}}</h2></div>
             <div class="clear"></div>
           </div>
+          <hr/>
           <div name="results" style="width:100%;">
-            <div class="split">
+            <h3 align="center">Results</h3>
+            <div class="splitl">
               {% block results0 %}{% endblock %}
             </div>
-            <div class="split">
+            <div class="splitr">
               {% block results1 %}{% endblock %}
             </div>
             <div class="clear"></div>
           </div>
+          <hr/>
           <div name="concordances" style="width:100%;">
-            <div class="split">
+            <h3 align="center">Concordances</h3>
+            <div class="splitl">
               {% block concordances0 %}{% endblock %}
             </div>
-            <div class="split">
+            <div class="splitr">
               {% block concordances1 %}{% endblock %}
             </div>
             <div class="clear"></div>
           </div>
+          <hr/>
           <div name="graphics0" style="width:100%;">
-            <div class="split">
+            <h3 align="center">Graphics</h3>
+            <div class="splitl">
               {% block graphics00 %}{% endblock %}
               <div class="clear"></div>
             </div>
-            <div class="split">
+            <div class="splitr">
               {% block graphics10 %}{% endblock %}
               <div class="clear"></div>
             </div>
             <div class="clear"></div>
           </div>
           <div name="graphics1" style="width:100%;">
-            <div class="split">
+            <div class="splitl">
               {% block graphics01 %}{% endblock %}
               <div class="clear"></div>
             </div>
-            <div class="split">
+            <div class="splitr">
               {% block graphics11 %}{% endblock %}
               <div class="clear"></div>
             </div>
