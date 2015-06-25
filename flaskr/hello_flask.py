@@ -118,10 +118,21 @@ def show_results():
 
         # ages, genders = zip(get_stats(response_full[0]), get_stats(response_full[1]))
 
-        age_gen_hist = [0, 0]
+        age_gen_hist = [0, 0] # handeling having no data
         regionstats = { 0: {0 : 0}, 1: {0 : 0}}
+        total_male_sorted = np.array([float(value) for (key, value) in sorted(total_ageM.items())])
+        total_female_sorted = np.array([float(value) for (key, value) in sorted(total_ageF.items())])
+        ylim = (0,0)
         for i in num_queries:
-            age_gen_hist[i] = hist_ages_gender(term[i], agesM[i], agesF[i], total_ageM, total_ageF)
+            male_sorted = np.array([value for (key, value) in sorted(agesM[i].items())])
+            female_sorted = np.array([value for (key, value) in sorted(agesF[i].items())])
+            statsM = male_sorted/total_male_sorted
+            statsF = female_sorted/total_female_sorted
+            xticks = range(len(agesM[i]))
+            xtickNames = sorted(agesM[i])
+            ylim = (0, max(max(statsM), max(statsF), ylim[1]))
+
+            age_gen_hist[i] = hist_ages_gender(term[i], statsM, statsF, xticks, xtickNames, ylim)
             curRegion = response_full[i].facet_counts[u'facet_fields'][u'nuts-3']
             regionstats[i] = {region[0]: float(curRegion[region[0]])/region[1] for region in nuts3regions}
 
