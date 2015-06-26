@@ -62,14 +62,22 @@
 {% endblock %}
 
 {% block results0 %}
-
-
-<p>Number of results for term 1: {{distribution[0]}}</p>
-
-<p>Number of responses from males, term 1: {{genders[0][0]}}</p>
-<p>Number of responses from females, term 1: {{genders[0][1]}}</p>
-
-<br/>
+{% if distribution[0] > 0 %}
+<table class="table" style="width:100%">
+  <tr>
+    <td>Number of results</td>
+    <td>{{distribution[0]}}</td>
+  </tr>
+  <tr>
+    <td>Number of responses from men</td>
+    <td>{{genders[0][0]}}</td>
+  </tr>
+  <tr>
+    <td>Number of responses from women</td>
+    <td>{{genders[0][1]}}</td>
+  </tr>
+</table>
+{% endif %}
 {% endblock %}
 
 {% block concordances0 %}
@@ -78,13 +86,12 @@
 {% for hit in responses[0]%}
 <p>{{ hit }}</p>
 {% endfor %}
-<br/>
 {% endblock %}
 
 {% block graphics00 %}
 
 {% if not agegenhist0 == 0 %}
-<img width="90%" src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
+<img width="100%" src="data:image/jpg;base64,{{agegenhist0.getvalue().encode("base64").strip()}}">
 {% endif %}
 {% endblock %}
 
@@ -108,7 +115,7 @@
 
           var div = $('<div />').addClass('mapnail');
   $('#map0').append(div);
-  var map0 = kartograph.map(div, w * 0.6);
+  var map0 = kartograph.map(div, w * 1);
 
   map0.setMap(svg);
   map0.addLayer('nutsregions', {
@@ -129,12 +136,22 @@
 {% endblock %}
 
 {% block results1 %}
-
-<p>Number of results for term 2: {{distribution[1]}}</p>
-
-<p>Number of responses from males, term 2: {{genders[1][0]}}</p>
-<p>Number of responses from females, term 2: {{genders[1][1]}}</p>
-<br/>
+{% if distribution[1] > 0 %}
+<table class="table" style="width:100%">
+  <tr>
+    <td>Number of results</td>
+    <td>{{distribution[1]}}</td>
+  </tr>
+  <tr>
+    <td>Number of responses from men</td>
+    <td>{{genders[1][0]}}</td>
+  </tr>
+  <tr>
+    <td>Number of responses from women</td>
+    <td>{{genders[1][1]}}</td>
+  </tr>
+</table>
+{% endif %}
 {% endblock %}
 
 {% block concordances1 %}
@@ -143,14 +160,13 @@
 {% for hit in responses[1] %}
 <p>{{ hit }}</p>
 {% endfor %}
-<br/>
 {% endblock %}
 
 {% block graphics10 %}
 
 
 {% if not agegenhist1 == 0 %}
-<img width="90%" src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
+<img width="100%" src="data:image/jpg;base64,{{agegenhist1.getvalue().encode("base64").strip()}}">
 {% endif %}
 {% endblock %}
 
@@ -169,7 +185,7 @@
 
           var div = $('<div />').addClass('mapnail');
   $('#map1').append(div);
-  var map1 = kartograph.map(div, w * 0.6);
+  var map1 = kartograph.map(div, w * 1);
 
   map1.setMap(svg);
   map1.addLayer('nutsregions', {

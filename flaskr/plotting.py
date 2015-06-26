@@ -22,8 +22,8 @@ def hist_ages_gender(term, statsM, statsF, xticks, xticknames, ylim, min_age=10,
 
     bar_width = 0.35
     displace = bar_width/2
-    plt.bar(np.array(xticks) + displace, statsM, bar_width, align='edge', label='Male', color='b')
-    plt.bar(np.array(xticks) + displace + bar_width, statsF, bar_width, align='edge', label='Female', color='g')
+    plt.bar(np.array(xticks) + displace, statsM, bar_width, align='edge', label='Men', color='b')
+    plt.bar(np.array(xticks) + displace + bar_width, statsF, bar_width, align='edge', label='Women', color='g')
     plt.xticks(xticks, xticknames)
     plt.ylim(ylim)
 
