@@ -32,10 +32,10 @@ def create_map(cc):
     K.generate(cfg, outfile=cc+'.svg')
 
 for c in country:
-    print country[c]
+    print(country[c])
 
 for c in country:
-    print 'Creating map for:', c
+    print('Creating map for:', c)
     if c != 'FR':
         create_map(c)
-        print 'FR map has bugs, cant create it'
+        print('FR map has bugs, cant create it')

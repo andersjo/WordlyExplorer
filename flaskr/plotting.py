@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import cStringIO
+import io
 import seaborn as sns
 
 from kartograph import Kartograph
@@ -29,7 +29,7 @@ def hist_ages_gender(term, statsM, statsF, xticks, xticknames, ylim, min_age=10,
 
     plt.legend()
     plt.tight_layout()
-    sio = cStringIO.StringIO()
+    sio = io.StringIO()
     plt.savefig(sio, format="jpg")
     plt.close(fig) # Close figures to save mem
     return sio

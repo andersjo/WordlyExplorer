@@ -9,6 +9,7 @@ import solr # Trying to switch to urllib3 (or 2) instead
 #import vincent
 #import codecs
 import helper_scripts
+import numpy as np
 #import itertools
 
 from plotting import *
@@ -21,14 +22,13 @@ APP = flask.Flask(__name__)
 # Create connection to solr database
 s = solr.SolrConnection('http://localhost:8983/solr/trustpilot_reviews')
 
-
 country_codes, reverse_cc = helper_scripts.make_country_codes()
 
 def get_stats(responses, responsesM, responsesF):
-    genders = responses.facet_counts[u'facet_fields'][u'gender']
-    ages = responses.facet_counts[u'facet_ranges'][u'age'][u'counts']
-    agesM = responsesM.facet_counts[u'facet_ranges'][u'age'][u'counts']
-    agesF = responsesF.facet_counts[u'facet_ranges'][u'age'][u'counts']
+    genders = responses.facet_counts['facet_fields']['gender']
+    ages = responses.facet_counts['facet_ranges']['age']['counts']
+    agesM = responsesM.facet_counts['facet_ranges']['age']['counts']
+    agesF = responsesF.facet_counts['facet_ranges']['age']['counts']
     return ages, genders, agesM, agesF
 
 def do_query(query):
@@ -81,7 +81,7 @@ def show_results():
 
     _, data, dataM, dataF = do_query(query)
 
-    nuts3regions = [[nuts3, val] for nuts3, val in data.facet_counts[u'facet_fields'][u'nuts-3'].iteritems() if val > 0 ] # we dont want to run over all of the other countries
+    nuts3regions = [[nuts3, val] for nuts3, val in data.facet_counts['facet_fields']['nuts-3'].items() if val > 0 ] # we dont want to run over all of the other countries
 
     #print data.facet_counts[u'facet_fields'][u'nuts-3']
     #img = data.facet_counts[u'facet_heatmaps'][u'location_rpt']['counts_png'] # Get heatmap image
@@ -133,7 +133,7 @@ def show_results():
             female_sorted[i] = np.array([value for (key, value) in sorted(agesF[i].items())])
             statsM[i] = male_sorted[i]/total_male_sorted
             statsF[i] = female_sorted[i]/total_female_sorted
-            xticks = range(len(agesM[i]))
+            xticks = list(range(len(agesM[i])))
             xtickNames = sorted(agesM[i])
 
         ylim = (0,0)
@@ -142,7 +142,7 @@ def show_results():
 
         for i in num_queries:
             age_gen_hist[i] = hist_ages_gender(term[i], statsM[i], statsF[i], xticks, xtickNames, ylim)
-            curRegion = response_full[i].facet_counts[u'facet_fields'][u'nuts-3']
+            curRegion = response_full[i].facet_counts['facet_fields']['nuts-3']
             regionstats[i] = {region[0]: float(curRegion[region[0]])/region[1] for region in nuts3regions}
 
         #print 'regional stats:', regionstats
@@ -163,7 +163,7 @@ def show_results():
         genderstats = [[],[]]
         for i in range(2):
             if i in num_queries:
-                genderstats[i] = [genders[i][u'M'], genders[i][u'F']]
+                genderstats[i] = [genders[i]['M'], genders[i]['F']]
             else:
                 genderstats[i] = [0,0]
 

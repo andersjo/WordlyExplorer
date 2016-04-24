@@ -64,7 +64,7 @@ def read_reviews(filename, n=None):
         yield review
 
 def arguments():
-    print 'Must specify wether on a per \'user\' basis or per \'review\' basis'
+    print('Must specify wether on a per \'user\' basis or per \'review\' basis')
 
 def locationData(filename):
     data = defaultdict(lambda: defaultdict(list))
@@ -88,7 +88,7 @@ def make_country_codes():
     codes = {}
     reverse_cc = {}
     ccfile = codecs.open('iso_country_codes.csv', encoding='utf-8')
-    ccfile.next()
+    next(ccfile)
     for line in ccfile:
         cc, country = line.replace('"', '').strip('\r\n').strip().split(',')
         codes[country] = cc
@@ -144,10 +144,10 @@ def read_json_line(line):
                 rev['nuts-2'] = data['NUTS-2']
                 rev['nuts-3'] = data['NUTS-3']
             except KeyError as e:
-                print 'KeyError using ', e
-                print 'USER ID', rev['user_id']
+                print('KeyError using ', e)
+                print('USER ID', rev['user_id'])
                 # print 'country: ', rev['country']
-                print 'city: ', rev['city']
+                print('city: ', rev['city'])
                 # cc = rev['country']
                 # rev['location'] = locdata[cc][rev['city']]
 #            print 'only 1 loc', rev['country']
@@ -165,7 +165,7 @@ if len(sys.argv) == 3:
             for user in read_user_reviews(sys.argv[1][:-6]):
                 user['reviews'] = get_reviews(user)
                 #s.add_many([user])
-                print [user]
+                print([user])
                 break
         else:
             pass
