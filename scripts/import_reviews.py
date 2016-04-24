@@ -1,13 +1,11 @@
 # coding:utf-8
 import argparse
 import json
-import numpy as np
-from collections import defaultdict
-from itertools import chain, islice
-import codecs
-from user_review_reader import read_user_reviews
-import requests
+from itertools import islice
 from pathlib import Path
+
+import numpy as np
+import requests
 
 parser = argparse.ArgumentParser(description="Import reviews into solr database")
 parser.add_argument('file', type=Path)
@@ -18,22 +16,22 @@ args = parser.parse_args()
 SOLR_URL = "http://localhost:8983/solr/humboldt"
 SOLR_UPDATE_URL = SOLR_URL + "/update"
 
-
-
 EARTH_RADIUS = 6371
+
+
 def get_shortest_in(needle, haystack):
     '''
     :param needle: single (lat,long) tuple.
     :param haystack: numpy array to find the point in that has the shortest distance to needle
     :return:
     '''
-    dlat = np.radians(haystack[:,0]) - np.radians(needle[0])
-    dlon = np.radians(haystack[:,1]) - np.radians(needle[1])
-    a = np.square(np.sin(dlat/2.0)) + np.cos(np.radians(needle[0])) * np.cos(np.radians(haystack[:,0])) * np.square(np.sin(dlon/2.0))
+    dlat = np.radians(haystack[:, 0]) - np.radians(needle[0])
+    dlon = np.radians(haystack[:, 1]) - np.radians(needle[1])
+    a = np.square(np.sin(dlat / 2.0)) + np.cos(np.radians(needle[0])) * np.cos(np.radians(haystack[:, 0])) * np.square(
+        np.sin(dlon / 2.0))
     great_circle_distance = 2 * np.arcsin(np.minimum(np.sqrt(a), np.repeat(1, len(a))))
     d = EARTH_RADIUS * great_circle_distance
     return d.tolist()
-
 
 
 def location_data(file):
@@ -61,7 +59,7 @@ def location_data(file):
             same_place = np.where(distances <= 11)
             same_place = set([tuple(sorted(list(x)))[-1] for x in zip(same_place[0], same_place[1])])
             if same_place:
-                new_info = [hub for i, hub in enumerate(info)  if i not in same_place]
+                new_info = [hub for i, hub in enumerate(info) if i not in same_place]
                 info = new_info
 
         # Select the biggest city
@@ -94,7 +92,9 @@ def make_country_codes():
 
     return codes, reverse_cc
 
+
 country_codes, _ = make_country_codes()
+
 
 def read_json_line(line):
     user = json.loads(line)
@@ -115,7 +115,8 @@ def read_json_line(line):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
 
         locations = user['location'].split(",")
-        new_review['country'] = locations[-1].strip() # last entry is always the country, but strip whitespaces before/after name
+        new_review['country'] = locations[
+            -1].strip()  # last entry is always the country, but strip whitespaces before/after name
         if len(locations) > 1:
             city = locations[0]
             new_review['city'] = city.replace(" Municipality", "")
@@ -135,8 +136,8 @@ def read_json_line(line):
         reviews.append(new_review)
     return reviews
 
-locdata = location_data(args.locations)
 
+locdata = location_data(args.locations)
 
 for line in islice(args.file.open(), 100):
     reviews = read_json_line(line)
