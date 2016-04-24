@@ -1,0 +1,19 @@
+- add .conll and .meta file information to JSON files on a per review basis
+	- add a field 'tokenized_text' to each review in reviews
+	- add a field 'pos' to each review in reviews
+	- add a field 'source_version'
+	- add a field 'langid'
+
+- ensure doc_ids can be generated from .meta files
+- make 2 DBs: by review and by person
+- as ID use userID + review#
+- is the date format accepted by SOLR?
+- fields that should not be sub-analyzed: gender, company_id
+
+- add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
+
+
+ACTION:
+- DH: add fields to JSON files
+- AJ: modify import fields
+
