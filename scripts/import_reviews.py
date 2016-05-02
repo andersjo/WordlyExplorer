@@ -79,6 +79,25 @@ def location_data(file):
 
     return coords_by_country_and_city
 
+def map_solr_fields(review):
+    """Create a new review document where all fields are mapped to compatible Solr auto types"""
+    MAPPING = {
+        'id': 'id',
+        'body_text': 'body_text_ws',
+        'title_text': 'title_text_ws',
+        'gender': 'gender_ss',
+        'age': 'age_i',
+        'reviewer_id': 'reviewer_id_ss',
+        'location': 'location_rpt',
+        'country': 'country_ss',
+        'nuts_1': 'nuts_1_ss',
+        'nuts_2': 'nuts_2_ss',
+        'nuts_3': 'nuts_3_ss',
+    }
+
+    return {MAPPING[key]: val
+            for key, val in review.items()
+            if key in MAPPING}
 
 def make_country_codes():
     codes = {}
@@ -92,21 +111,19 @@ def make_country_codes():
 
     return codes, reverse_cc
 
-
 country_codes, _ = make_country_codes()
 
 
 def read_json_line(line):
     user = json.loads(line)
 
-    reviews = []
     for review_index, org_review in enumerate(user['reviews']):
         if 'text' not in org_review:
             continue
 
-        new_review = {'text': " ".join(org_review.get('text', [])),
-                      'title': org_review.get('title'),
-                      'user_id': user['user_id'],
+        new_review = {'body_text': " ".join(org_review.get('text', [])).lower(),
+                      'title_text': (org_review.get('title') or "").lower(),
+                      'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),
                       'gender': user.get('gender', 'NA')
                       }
@@ -129,19 +146,31 @@ def read_json_line(line):
                 new_review['location'] = coords
                 new_review['location_rpt'] = coords
                 if 'NUTS-1' in user:
-                    new_review['nuts-1'] = user['NUTS-1']
-                    new_review['nuts-2'] = user['NUTS-2']
-                    new_review['nuts-3'] = user['NUTS-3']
+                    new_review['nuts_1'] = user['NUTS-1']
+                    new_review['nuts_2'] = user['NUTS-2']
+                    new_review['nuts_3'] = user['NUTS-3']
 
-        reviews.append(new_review)
-    return reviews
-
+        yield new_review
 
 locdata = location_data(args.locations)
 
+BATCH_SIZE = 25
 for line in islice(args.file.open(), 100):
-    reviews = read_json_line(line)
-    r = requests.post(SOLR_UPDATE_URL, json=reviews)
-    print(r, r.text)
+    batch = []
+    for review in read_json_line(line):
+        batch.append(map_solr_fields(review))
 
+    if len(batch) >= BATCH_SIZE:
+        r = requests.post(SOLR_UPDATE_URL, json=batch)
+        r.raise_for_status()
+        batch = []
+
+if len(batch):
+    # Submit final batch
+    r = requests.post(SOLR_UPDATE_URL, json=batch)
+    r.raise_for_status()
+
+
+# Send commit to make changes visible
 r = requests.get(SOLR_UPDATE_URL + "?commit=true")
+r.raise_for_status()
