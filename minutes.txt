@@ -1,19 +1,30 @@
 - add .conll and .meta file information to JSON files on a per review basis
 	- add a field 'tokenized_text' to each review in reviews
 	- add a field 'pos' to each review in reviews
-	- add a field 'source_version'
-	- add a field 'langid'
+	- add a field 'langid' => currently derived from CoNLL file, not separate langid.py analysis
+	DONE!
 
 - ensure doc_ids can be generated from .meta files
 - make 2 DBs: by review and by person
 - as ID use userID + review#
 - is the date format accepted by SOLR?
-- fields that should not be sub-analyzed: gender, company_id
+- fields that should not be sub-analyzed/tokenized: gender, company_id
 
 - add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
-
 
 ACTION:
 - DH: add fields to JSON files
 - AJ: modify import fields
+==================================================================================================================
+
+- index words manually, to allow for search over lower-cased and actual-cased strings. For now, use lower case.
+- have a mode that discovers existing spelling variations of the target word, and allow the user to include them
+- Soundex: find the "phonological signature" of a word
+- Note potential problem: tokenization is based on CoNLL, might include titles, but exclude single-word files
+- what age groups do we want? Binning by 10 years, plus at least one other one
+- check SOLR user guide for field options
+- add an import field 'source_version' (TP-2014, Twitter-DA, etc.)
+
+ACTION:
+- AJ: fiddle with imports
 
