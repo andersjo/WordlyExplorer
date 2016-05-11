@@ -29,4 +29,28 @@ ACTION:
 - AJ: fiddle with imports
 - DH: find age ranges
 
+==================================================================================================================
+- central file: humboldt.py, copy things over incrementally
+- file with definitions (SOLR location, helper scripts)
+
+- TODO: generate empty homepage from humboldt.py
+- TODO: integrate existing layout
+- TODO: include queries
+- TODO: add combined fields: agegroup+gender, region+gender
+
+Step to a query:
+- select language:country pair target {from EN:GB, DA:DK}
+- enter search term (later: add syntax for special searches. For now: add tick boxes)
+- find out how many reviews the term matches
+- collect gender and age stats
+- collect regional distribution (for now: tabulate NUTS regions)
+
+Separate tab for comparison query:
+- enter two terms
+- present differences rather than individual plots
+- identify key differences and summarize w/ significance tests
+
+ACTION:
+- AJ: fill DBs
+
 
