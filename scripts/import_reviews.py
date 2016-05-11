@@ -85,14 +85,15 @@ def map_solr_fields(review):
         'id': 'id',
         'body_text': 'body_text_ws',
         'title_text': 'title_text_ws',
-        'gender': 'gender_ss',
+        'gender': 'gender_s',
         'age': 'age_i',
-        'reviewer_id': 'reviewer_id_ss',
+        'reviewer_id': 'reviewer_id_s',
         'location': 'location_rpt',
-        'country': 'country_ss',
-        'nuts_1': 'nuts_1_ss',
-        'nuts_2': 'nuts_2_ss',
-        'nuts_3': 'nuts_3_ss',
+        'country': 'country_s',
+        'nuts_1': 'nuts_1_s',
+        'nuts_2': 'nuts_2_s',
+        'nuts_3': 'nuts_3_s',
+        'company_id': 'company_id_s'
     }
 
     return {MAPPING[key]: val
@@ -118,11 +119,15 @@ def read_json_line(line):
     user = json.loads(line)
 
     for review_index, org_review in enumerate(user['reviews']):
-        if 'text' not in org_review:
-            continue
+        # if 'text' not in org_review:
+        #     continue
 
-        new_review = {'body_text': " ".join(org_review.get('text', [])).lower(),
-                      'title_text': (org_review.get('title') or "").lower(),
+        body_text = " ".join([" ".join(sent) for sent in org_review.get('tokenized_text', [])])
+        title_text = " ".join([" ".join(sent) for sent in org_review.get('title_tokenized', [])])
+
+        new_review = {'body_text': body_text,
+                      'title_text': title_text,
+                      'company_id': org_review['company_id'],
                       'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),
                       'gender': user.get('gender', 'NA')
@@ -155,8 +160,8 @@ def read_json_line(line):
 locdata = location_data(args.locations)
 
 BATCH_SIZE = 25
-for line in islice(args.file.open(), 100):
-    batch = []
+batch = []
+for line in islice(args.file.open(), None):
     for review in read_json_line(line):
         batch.append(map_solr_fields(review))
 
@@ -170,7 +175,5 @@ if len(batch):
     r = requests.post(SOLR_UPDATE_URL, json=batch)
     r.raise_for_status()
 
-
-# Send commit to make changes visible
 r = requests.get(SOLR_UPDATE_URL + "?commit=true")
 r.raise_for_status()
