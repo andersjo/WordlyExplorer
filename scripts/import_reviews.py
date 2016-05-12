@@ -10,7 +10,8 @@ import requests
 parser = argparse.ArgumentParser(description="Import reviews into solr database")
 parser.add_argument('file', type=Path)
 parser.add_argument('--locations', type=Path, required=True)
-parser.add_argument('--country-codes', type=Path, required=True)
+# parser.add_argument('--country-codes', type=Path, required=True)
+parser.add_argument('--country-code', type=str, required=True)
 args = parser.parse_args()
 
 SOLR_URL = "http://localhost:8983/solr/humboldt"
@@ -113,7 +114,7 @@ def make_country_codes():
 
     return codes, reverse_cc
 
-country_codes, _ = make_country_codes()
+# country_codes, _ = make_country_codes()
 
 
 def read_json_line(line):
@@ -139,15 +140,15 @@ def read_json_line(line):
         if user.get('birth_year') and user.get('date'):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
 
-        # TODO: this might have a lot of variatino. Replace this with a specified flag to set country during import?
+        # TODO: this might have a lot of variation. Replace this with a specified flag to set country during import?
         locations = user['location'].split(",")
-        new_review['country'] = locations[
-            -1].strip()  # last entry is always the country, but strip whitespaces before/after name
+        country_code = args.country_code#country_codes.get(new_review['country'])
+        new_review['country'] = country_code
+        #locations[-1].strip()  # last entry is always the country, but strip whitespaces before/after name
         if len(locations) > 1:
             city = locations[0]
             new_review['city'] = city.replace(" Municipality", "")
 
-            country_code = country_codes.get(new_review['country'])
             lookup_key = (country_code, city)
 
             coords = locdata.get(lookup_key)

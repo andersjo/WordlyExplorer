@@ -21,6 +21,14 @@ def index():
 
 
 def single_query(search_term, country, language):
+    """
+    search for a single term in a country and language
+    :param search_term:
+    :param country:
+    :param language:
+    :return:
+    """
+    # TODO: add filter for country and language
     q = "facet.field=gender_s\
     &facet.field=nuts_2_s\
     &facet.field=country_s\
