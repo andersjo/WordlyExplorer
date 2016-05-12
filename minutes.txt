@@ -57,6 +57,7 @@ ACTION:
 
 The search works, but doesn't pick up on NUTS.
 How do we distinguish the countries? Rather than using location info, define on import with separate flag?
+Add field for language: DONE!
 
 
 
