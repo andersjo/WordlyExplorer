@@ -16,7 +16,6 @@ gfxtest.py
 *.properties
 *.unloaded
 *.conf
-*.html
 *.[ct]sv
 *.json
 *.cfg

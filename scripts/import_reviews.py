@@ -133,7 +133,6 @@ def read_json_line(line):
                       'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),
                       'gender': user.get('gender', 'NA'),
-                      # TODO: is this correct?
                       'langid': org_review['langid']
                       }
 
