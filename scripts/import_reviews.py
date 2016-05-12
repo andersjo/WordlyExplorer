@@ -93,7 +93,8 @@ def map_solr_fields(review):
         'nuts_1': 'nuts_1_s',
         'nuts_2': 'nuts_2_s',
         'nuts_3': 'nuts_3_s',
-        'company_id': 'company_id_s'
+        'company_id': 'company_id_s',
+        'langid': 'langid_s'
     }
 
     return {MAPPING[key]: val
@@ -130,12 +131,15 @@ def read_json_line(line):
                       'company_id': org_review['company_id'],
                       'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),
-                      'gender': user.get('gender', 'NA')
+                      'gender': user.get('gender', 'NA'),
+                      # TODO: is this correct?
+                      'langid': org_review['langid']
                       }
 
         if user.get('birth_year') and user.get('date'):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
 
+        # TODO: this might have a lot of variatino. Replace this with a specified flag to set country during import?
         locations = user['location'].split(",")
         new_review['country'] = locations[
             -1].strip()  # last entry is always the country, but strip whitespaces before/after name
