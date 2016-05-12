@@ -17,7 +17,7 @@ def index():
     Displays the index page accessible at '/'
     """
     # TODO: integrate layout
-    return flask.render_template('trustpilot.html', queries=[])
+    return flask.render_template('humboldt.html', queries=[])
 
 
 def single_query(search_term, country, language):
