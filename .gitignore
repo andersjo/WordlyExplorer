@@ -10,36 +10,6 @@ solr-*
 gfxtest.py
 
 # We only want specifically added text type files
-*README*
-*.txt
-*.xml
-*.properties
-*.unloaded
-*.conf
-*.[ct]sv
-*.json
-*.cfg
-*.ini
-*.da
-*.meta
-*.jsonl
-*.conll
-*.tex
-*.el
-*[t.]log*
-*.sh
-*.bat
-*.MF
-*schema*
-*.vm
-*.xsl
-*.si
-*.liv
-*.fd[tx]
-*.fnm
-*.ti[mp]
-*.doc
-*.pos
 *.nv[dm]
 *.lock
 *segments_*
