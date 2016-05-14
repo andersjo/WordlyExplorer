@@ -1,26 +1,52 @@
 """
 This is the central file, generating the homepage
 """
+import json
+
 import flask
+from flask import request
 
 # Create the application.
-APP = flask.Flask(__name__)
+import requests
+from werkzeug.debug import DebuggedApplication
+
+HUMBOLDT_APP = flask.Flask(__name__)
+
+# TODO move to separate file
 SOLR_URL = "http://localhost:8983/solr/humboldt"
+SOLR_SELECT_URL = SOLR_URL + "/select?wt=json"
+SOLR_QUERY_URL = SOLR_URL + "/query"
 
 
 # Create connection to solr database
 # s = solr.SolrConnection(SOLR_URL)
 
-@APP.route('/')
+@HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
 def index():
     """
     Displays the index page accessible at '/'
     """
-    # TODO: integrate layout
-    return flask.render_template('humboldt.html', queries=[])
+    if request.method == 'POST':
+        # print(request.form['query'])
+        # result = request.form['query']
+        search_terms = request.form["singleTermQuery"]
+
+        json_results = search_single_term(search_terms, "missing", "missing")
 
 
-def single_query(search_term, country, language):
+        print(request.json)
+        return flask.render_template('single_term.html',
+                                     query=request.form["singleTermQuery"],
+                                     jsonResults=json.dumps(json_results, indent=True)
+                                     )
+    else:
+        return flask.render_template('single_term.html')
+
+
+
+
+
+def search_single_term(search_term, country, language):
     """
     search for a single term in a country and language
     :param search_term:
@@ -28,22 +54,23 @@ def single_query(search_term, country, language):
     :param language:
     :return:
     """
-    # TODO: add filter for country and language
-    q = "facet.field=gender_s\
-    &facet.field=nuts_2_s\
-    &facet.field=country_s\
-    &facet.field=langid_s\
-    &facet=on\
-    &indent=on\
-    &q=body_text_ws:%s\
-    &rows=0\
-    &start=0\
-    &wt=json" % (search_term)
+    json_query = {
+        "query": "body_text_ws:{}".format(search_term),
+        # "facet.field": ["nuts_2_s", "country_s", "langid_s"],
+        # "facet": "on",
+        "limit": 0
+    }
+
+    resp = requests.post(SOLR_QUERY_URL, json=json_query)
+    print("Making query", json_query)
+    resp.raise_for_status()
+    return resp.json()
 
 
 if __name__ == '__main__':
-    APP.debug = True
-    APP.run()
+    HUMBOLDT_APP.run(debug=True)
+    # DebuggedApplication(HUMBOLDT_APP, evalex=True)
+    # .run(debug=True)
 
 
 
