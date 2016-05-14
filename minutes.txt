@@ -33,7 +33,7 @@ ACTION:
 - central file: humboldt.py, copy things over incrementally
 - file with definitions (SOLR location, helper scripts)
 
-- TODO: generate empty homepage from humboldt.py
+- TODO: generate empty homepage from humboldt.py (use humboldt.html)
 - TODO: integrate existing layout
 - TODO: include queries
 - TODO: add combined fields: agegroup+gender, region+gender
@@ -55,9 +55,12 @@ ACTION:
 
 =================================================================================================================
 
-The search works, but doesn't pick up on NUTS.
-How do we distinguish the countries? Rather than using location info, define on import with separate flag?
+How do we distinguish the countries? Rather than using location info, define on import with separate flag? DONE!
 Add field for language: DONE!
+Add another script to reset the DB.
 
-
+ACTION:
+- get query from the website to the DB and display the results
+- add two-term query
+- go live...
 

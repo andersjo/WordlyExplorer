@@ -10,6 +10,9 @@ solr-*
 gfxtest.py
 
 # We only want specifically added text type files
+*.nv[dm]
+*.lock
+*segments_*
 
 # No compressed files
 *.zip
