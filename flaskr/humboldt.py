@@ -1,12 +1,10 @@
 import json
-
 import flask
 from flask import request
 import pandas as pd
 import requests
 import bokeh
 from bokeh.charts import Bar
-
 from bokeh.plotting import figure
 from bokeh.embed import components
 
@@ -19,10 +17,7 @@ SOLR_SELECT_URL = SOLR_URL + "/select?wt=json"
 SOLR_QUERY_URL = SOLR_URL + "/query"
 
 
-# Create connection to solr database
-# s = solr.SolrConnection(SOLR_URL)
-
-@HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
+@HUMBOLDT_APP.route('/', methods=['GET', 'POST'])
 def index():
     """
     Displays the index page accessible at '/'
@@ -62,6 +57,17 @@ def index():
                                      )
     else:
         return flask.render_template('single_term.html')
+
+
+@HUMBOLDT_APP.route('/about')
+def about():
+    return flask.render_template('about.html')
+
+
+@HUMBOLDT_APP.route('/contact')
+def contact():
+    return flask.render_template('contact.html')
+
 
 def buckets_to_series(bucket_dict):
     """Converts a a list of buckets to a pd.Series.
@@ -105,7 +111,3 @@ if __name__ == '__main__':
     # DebuggedApplication(HUMBOLDT_APP, evalex=True)
     # .run(debug=True)
 
-
-
-
-# TODO: include queries

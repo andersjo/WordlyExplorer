@@ -1,0 +1,50 @@
+{% extends "humboldt_layout.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+
+<p>
+We will go live on Monday, May 23, the day it will be presented at <a href="http://lrec2016.lrec-conf.org/en/conference-programme/accepted-papers/">LREC 2016</a>. In the meantime, read more about us here and tell your friends.
+</p>
+
+<p align=center>
+<img src="../static/img/will.png"> <img src="../static/img/alex.png"></br>
+<em>Wilhelm and Alexander von Humboldt</em>
+</p>
+
+<p>
+We provide a web interface that allows the user to query for lexical phenomena in several languages, and to get both statistical analysis and map representations of the results along several demographic factors.
+</p>
+
+<p>
+The goal of this tool, Humboldt, is to enable linguists to explore language variation at a large scale. It is named after the Humboldt brothers, because like them, it combines linguistic knowledge and scientific exploration.
+</p>
+
+<p>
+The interface gives linguists capabilities that would otherwise require programming experience, training in statistical methods, knowledge of geographical information systems, and expertise in natural language processing. We  provide an interface to explore large-scale language variation along multiple socio-demographic factors - <em>without any programming knowledge</em>. It uses of large amounts of data and provides statistical analyses, maps, and interactive features that will enable scholars to explore language variation in a data-driven way.
+</p>
+
+<h2>Example case: <em>definitely</em></h2>
+
+<p>
+There are more than 300 variants of "definitely" in British English, including <em>definately</em>, <em>deffinitely</em>, or <em>defanately</em>.
+One of the more common variants is <em>definately</em>. One might wonder whether this is simply a random mistake, or whether there are any underlying variable governing it. A typing error seems unlikely, given that the differing keys are separated on the keyboard.
+</p>
+
+<p>
+Looking for differences in age and gender (see below) does not show any substantial differences in use.
+<div align=center>
+<img src="../static/img/definitely-female.png" width=40%>
+<img src="../static/img/definitely-male.png" width=40%><br/>
+<em>Figure 1:</em> Frequency of <em>definitely/definately</em> spelling variations in English data by age and gender<div>
+</p>
+
+<p align=left>
+However, when plotting the regional distribution on a map, we can see that the occurrences are centered around the regions of the Midlands (see Figure below). This makes a dialect-phonological feature a likely source for the variant.
+<div align=center>
+<img src="../static/img/definitely.png" width=40%><br/>
+<em>Figure 2:</em> Ratio of <em>definately</em> spelling in English data by NUTS regions<div>
+</p>
+{% endblock %}
+
