@@ -1,0 +1,102 @@
+{% extends "humboldt_layout.html" %}
+
+{% block content %}
+
+    <h3>Hello</h3>
+
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+
+    <!-- TopoJSON support !-->
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+
+
+    <style type="text/css">
+        #mapid {
+            height: 400px;
+            width: 500px;
+
+        }
+    </style>
+    <script language="javascript">
+        function handleLayer(layer) {
+            console.log("Handling layer", layer.feature.id)
+
+            if (Math.random() > 0.5) {
+                layer.setStyle({
+                    fillColor: "green",
+                    fillOpacity: 0.5,
+                    color: 'red',
+                    weight: 1,
+                    opacity: 0.5
+                });
+
+            } else {
+                layer.setStyle({
+                    fillColor: "yellow",
+                    fillOpacity: 0.5,
+                    color: '#555',
+                    weight: 1,
+                    opacity: 0.5
+                });
+            }
+
+
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var mymap = L.map('mapid').setView([51.505, -0.09], 4);
+            var marker = L.marker([51.5, -0.09]).addTo(mymap);
+
+            L.tileLayer('https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                maxZoom: 18,
+                id: 'humboldt',
+                accessToken: 'pk.eyJ1IjoiYW5kZXJzam8iLCJhIjoiY2lvOTBnajl6MDAwMnY4bTEwejFrODUwcSJ9.AwQTCWqByxT2OVta7NT68w'
+            }).addTo(mymap);
+
+            // Augment leaflet with TopJSON support
+            // See THIS tutorial: http://blog.webkid.io/maps-with-leaflet-and-topojson/
+
+            L.TopoJSON = L.GeoJSON.extend({
+                addData: function (jsonData) {
+                    console.log("Adding some data that I got in JSON");
+                    if (jsonData.type === "Topology") {
+                        for (key in jsonData.objects) {
+                            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+                            L.GeoJSON.prototype.addData.call(this, geojson);
+                        }
+                    }
+                    else {
+                        L.GeoJSON.prototype.addData.call(this, jsonData);
+                    }
+                }
+            });
+
+
+            // Add the data file itself
+            var topoLayer = new L.TopoJSON();
+
+            function addTopoData(topoData) {
+                topoLayer.addData(topoData);
+                topoLayer.addTo(mymap);
+                topoLayer.eachLayer(handleLayer)
+
+
+            }
+
+
+            $.getJSON("{{ url_for('static', filename='geo/nuts2.json') }}")
+                    .done(addTopoData);
+
+        }, false);
+
+
+    </script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css"/>
+
+    <div id="mapid"></div>
+    <p>THis is where the map is</p>
+
+{% endblock %}

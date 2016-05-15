@@ -1,3 +1,4 @@
+/*
 @import url();
 body {
 	font-family: Roboto, Helvetica, Verdana, sans-serif;
@@ -15,6 +16,7 @@ body {
     background-color: #cccccc;
    	color: rgb(0, 0, 0);
 }
+*/
 
 /*
 a, a:link, a:visited {
@@ -81,12 +83,14 @@ h1 {
 	background-color:rgba(232,225,185,0.6);
 }
 
+/*
 .humboldt_main {
 	background-color:rgba(232,225,185,0.6);
 	margin: auto;
 	text-align: left;
     padding: 40px 15px;
 }
+*/
 
 
 .portrait {

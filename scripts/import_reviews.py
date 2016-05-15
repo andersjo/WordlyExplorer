@@ -88,6 +88,7 @@ def map_solr_fields(review):
         'title_text': 'title_text_ws',
         'gender': 'gender_s',
         'age': 'age_i',
+        'review_year': 'review_year_i',
         'reviewer_id': 'reviewer_id_s',
         'location': 'location_rpt',
         'country': 'country_s',
@@ -136,15 +137,16 @@ def read_json_line(line):
                       'langid': org_review['langid']
                       }
 
-        if user.get('birth_year') and user.get('date'):
+        if user.get('birth_year') and org_review.get('date'):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
+            new_review['review_year'] = int(org_review['date'][:4])
 
         # TODO: this might have a lot of variation. Replace this with a specified flag to set country during import?
         locations = user['location'].split(",")
         country_code = args.country_code#country_codes.get(new_review['country'])
         new_review['country'] = country_code
         #locations[-1].strip()  # last entry is always the country, but strip whitespaces before/after name
-        if len(locations) > 1:
+        if len(locations) >= 1:
             city = locations[0]
             new_review['city'] = city.replace(" Municipality", "")
 
@@ -154,10 +156,11 @@ def read_json_line(line):
             if coords:
                 new_review['location'] = coords
                 new_review['location_rpt'] = coords
-                if 'NUTS-1' in user:
-                    new_review['nuts_1'] = user['NUTS-1']
-                    new_review['nuts_2'] = user['NUTS-2']
-                    new_review['nuts_3'] = user['NUTS-3']
+
+        if 'NUTS-1' in user:
+            new_review['nuts_1'] = user['NUTS-1']
+            new_review['nuts_2'] = user['NUTS-2']
+            new_review['nuts_3'] = user['NUTS-3']
 
         yield new_review
 

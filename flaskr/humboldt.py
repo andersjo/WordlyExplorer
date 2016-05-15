@@ -16,8 +16,12 @@ SOLR_URL = "http://localhost:8983/solr/humboldt"
 SOLR_SELECT_URL = SOLR_URL + "/select?wt=json"
 SOLR_QUERY_URL = SOLR_URL + "/query"
 
+@HUMBOLDT_APP.route('/maptest')
+def maptest():
+    return flask.render_template('maptest.html')
 
-@HUMBOLDT_APP.route('/', methods=['GET', 'POST'])
+
+@HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
 def index():
     """
     Displays the index page accessible at '/'
@@ -28,7 +32,7 @@ def index():
         search_terms = request.form["singleTermQuery"]
 
         json_results = search_single_term(search_terms,
-                                          language_code="en",
+                                          language_code="da",
                                           country_code="dk")
 
         # TODO move plotting to its own function
@@ -38,16 +42,9 @@ def index():
         plot = Bar(gender_buckets,
                    title="Gender distribution",
                    logo=None,
-                   toolbar_location="below"
-                   )
-
-        # plot = figure()
-        #
-        # plot.circle([1, 2], [3, 4])
+                   toolbar_location="below")
 
         bokeh_script, gender_plot_div = components(plot)
-
-
 
         return flask.render_template('single_term.html',
                                      query=request.form["singleTermQuery"],
@@ -86,7 +83,11 @@ def search_single_term(search_term, country_code, language_code):
         "facet": {
             "genders": {
                 "type": "terms",
-                "field": "gender_s"},
+                "field": "gender_s",
+                "facet": {
+                    "mean_age": "avg(age_i)"
+                }
+            },
             "nuts_2_regions": {
                 "type": "terms",
                 "field": "nuts_2_s"},
@@ -97,11 +98,13 @@ def search_single_term(search_term, country_code, language_code):
                    "langid_s:{}".format(language_code)
                    ],
 
-        "limit": 10
+        "limit": 2
     }
 
     resp = requests.post(SOLR_QUERY_URL, json=json_query)
-    resp.raise_for_status()
+    if not resp.ok:
+        print("Request failed: " + resp.text)
+        resp.raise_for_status()
     return resp.json()
 
 
