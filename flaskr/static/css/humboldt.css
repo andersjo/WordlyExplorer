@@ -83,12 +83,9 @@ h1 {
 
 .humboldt_main {
 	background-color:rgba(232,225,185,0.6);
-	align: center;
-	width: 90%;
 	margin: auto;
 	text-align: left;
-	padding: 0.1em;
-	padding-top: 0.5em;
+    padding: 40px 15px;
 }
 
 
