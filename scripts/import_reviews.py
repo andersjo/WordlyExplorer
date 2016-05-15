@@ -127,8 +127,8 @@ def read_json_line(line):
         body_text = " ".join([" ".join(sent) for sent in org_review.get('tokenized_text', [])])
         title_text = " ".join([" ".join(sent) for sent in org_review.get('title_tokenized', [])])
 
-        new_review = {'body_text': body_text,
-                      'title_text': title_text,
+        new_review = {'body_text': body_text.lower(),
+                      'title_text': title_text.lower(),
                       'company_id': org_review['company_id'],
                       'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),

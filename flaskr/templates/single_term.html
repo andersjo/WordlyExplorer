@@ -3,7 +3,9 @@
 {% block title %}Search page{% endblock %}
 
 {% block content %}
-    <!-- TODO use bootstrap layout instead of handtweaking distances !-->
+    {{ bokeh_script | safe }}
+
+    <!-- TODO use bootstrap layout instead of hand-tweaking distances !-->
     <form class="form-inline input-lg" method="post">
         <div class="form-group" style="margin-right: 20px">
             <label for="singleTermQuery">Search for</label>
@@ -24,8 +26,11 @@
     You searched for <em>{{ query }}</em>. Getting you some results.
     </div>
 
+    {{ gender_plot | safe }}
+
+
     <pre>
-    {{ jsonResults }}
+    {{ json_results}}
     </pre>
 
 {% endblock %}
