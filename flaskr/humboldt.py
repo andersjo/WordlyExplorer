@@ -23,6 +23,12 @@ SOLR_QUERY_URL = SOLR_URL + "/query"
 #TODO: index page
 
 
+@HUMBOLDT_APP.route('/')
+def welcome():
+    return flask.render_template('index.html')
+
+
+
 @HUMBOLDT_APP.route('/maptest')
 def maptest():
     return flask.render_template('maptest.html')
