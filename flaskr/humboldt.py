@@ -31,9 +31,10 @@ def index():
         # result = request.form['query']
         search_terms = request.form["singleTermQuery"]
 
+        language_var, country_var = request.form["languageAndRegion"].split(':', 1)
         json_results = search_single_term(search_terms,
-                                          language_code="da",
-                                          country_code="dk")
+                                          language_code=language_var,
+                                          country_code=country_var)
 
         # TODO move plotting to its own function
         gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
