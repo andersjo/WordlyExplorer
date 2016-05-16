@@ -17,7 +17,7 @@ SOLR_SELECT_URL = SOLR_URL + "/select?wt=json"
 SOLR_QUERY_URL = SOLR_URL + "/query"
 
 
-@HUMBOLDT_APP.route('/', methods=['GET', 'POST'])
+@HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
 def index():
     """
     Displays the index page accessible at '/'
@@ -28,8 +28,8 @@ def index():
         search_terms = request.form["singleTermQuery"]
 
         json_results = search_single_term(search_terms,
-                                          language_code="en",
-                                          country_code="dk")
+                                          language_code="da",
+                                          country_code="DK")
 
         # TODO move plotting to its own function
         gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
