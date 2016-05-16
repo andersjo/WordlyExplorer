@@ -11,10 +11,17 @@ from bokeh.embed import components
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
 
-# TODO move to separate file
+# TODO move to separate file, and include map info
 SOLR_URL = "http://localhost:8983/solr/humboldt"
 SOLR_SELECT_URL = SOLR_URL + "/select?wt=json"
 SOLR_QUERY_URL = SOLR_URL + "/query"
+
+#TODO: add a pandas DataFrame with totals
+
+#TODO: side-by-side comparison
+
+#TODO: index page
+
 
 @HUMBOLDT_APP.route('/maptest')
 def maptest():
@@ -55,6 +62,7 @@ def index():
                                      )
     else:
         return flask.render_template('single_term.html')
+
 
 
 @HUMBOLDT_APP.route('/about')
