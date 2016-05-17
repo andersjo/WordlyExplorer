@@ -1,17 +1,23 @@
 {% extends "humboldt_layout.html" %}
 
-{% block title %}Search page{% endblock %}
+{% block title %}Search results{% endblock %}
 
 {% block content %}
     {{ bokeh_script | safe }}
-
-    {% include 'single_search_bar.html' %}
 
     <div>
     You searched for <em>{{ query }}</em>. Getting you some results.
     </div>
 
+    <div>
     {{ gender_plot | safe }}
+    </div>
+
+
+    <div>
+    {{ age_plot | safe }}
+    </div>
+
 
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 
@@ -52,8 +58,7 @@
 
 
         document.addEventListener('DOMContentLoaded', function () {
-            var mymap = L.map('mapid').setView([56, 10.5], 6);
-            var marker = L.marker([51.5, -0.09]).addTo(mymap);
+            var mymap = L.map('mapid').setView({{ map_views[country_code][0] }}, {{ map_views[country_code][1] }});
 
             L.tileLayer('https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}', {
                 attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -69,6 +74,7 @@
                 addData: function (jsonData) {
                     console.log("Adding some data that I got in JSON");
                     if (jsonData.type === "Topology") {
+                        // TODO: add resrtiction to selected country NUTS only
                         for (key in jsonData.objects) {
                             geojson = topojson.feature(jsonData, jsonData.objects[key]);
                             L.GeoJSON.prototype.addData.call(this, geojson);
@@ -103,8 +109,12 @@
     <div id="mapid"></div>
 
     <pre>
-    {{ json_results}}
+    {{ json_results }}
     </pre>
+
+    <p>New search:
+    {% include 'single_search_bar.html' %}
+    </p>
 
 {% endblock %}
 

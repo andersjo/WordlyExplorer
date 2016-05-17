@@ -10,8 +10,6 @@
 - is the date format accepted by SOLR?
 - fields that should not be sub-analyzed/tokenized: gender, company_id
 
-- add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
-
 ACTION:
 - DH: add fields to JSON files
 - AJ: modify import fields
@@ -33,10 +31,9 @@ ACTION:
 - central file: humboldt.py, copy things over incrementally
 - file with definitions (SOLR location, helper scripts)
 
-- TODO: generate empty homepage from humboldt.py (use humboldt.html)
-- TODO: integrate existing layout
-- TODO: include queries
-- TODO: add combined fields: agegroup+gender, region+gender
+- TODO: generate empty homepage from humboldt.py (use humboldt.html): DONE
+- TODO: integrate existing layout: DONE
+- TODO: include queries: DONE
 
 Step to a query:
 - select language:country pair target {from EN:GB, DA:DK}
@@ -61,27 +58,30 @@ Add another script to reset the DB.
 
 ACTION:
 - get query from the website to the DB and display the results: DONE
-- add two-term query
-- go live...
-
-
-- change "NUTS-X" to "NUTS_X" in jsonl files via sed, and change in enrich...py
+- change "NUTS-X" to "NUTS_X" in jsonl files via sed, and change in enrich...py: DONE
 
 =================================================================================================================
-- make config file with country centers/bounding boxes and zoom-level
-- add the possible country:language pairs into config
-- include maps into results page
-- make bobble heads smaller and switch order
+- make config file with country centers/bounding boxes and zoom-level: DONE
+- add the possible country:language pairs into config: DONE
+- include maps into results page: DONE
+- make bobble heads smaller and switch order: DONE
+- switch to NUTS-3: DONE
 - add bibtex ref and other citation stuff
 - intro page (link paper, explanation of data, and overview plus worked examples [with links])
 - get totals for each facet to compute percentages
 - include error handling if search term is not found
 - at the end of side-by-side, include links to the individual queries
-- switch to NUTS-3
 
 PLOTS/INFO:
 - number of men and women, as totals and percentages
 - age distro
 - two plots (by gender) over age
 - NUTS map
+
+TODO:
+- add combined fields: agegroup+gender, region+gender
+- add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
+- add two-term query
+- go live...
+
 

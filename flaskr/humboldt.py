@@ -25,7 +25,7 @@ def welcome():
         return do_single_search(request.form)
 
     else:
-        return flask.render_template('index.html', available_options=AVAILABLE_OPTIONS)
+        return flask.render_template('index.html', map_views=MAP_VIEWS, available_options=AVAILABLE_OPTIONS)
 
 
 @HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
@@ -37,7 +37,9 @@ def search():
         return do_single_search(request.form)
 
     else:
-        return flask.render_template('single_term.html', available_options=AVAILABLE_OPTIONS)
+        return flask.render_template('search.html',
+                                     map_views=MAP_VIEWS,
+                                     available_options=AVAILABLE_OPTIONS)
 
 
 @HUMBOLDT_APP.route('/about')
@@ -71,27 +73,42 @@ def do_single_search(request_form):
     """
     search_terms = request_form["singleTermQuery"]
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
-    json_results = search_single_term(search_terms,
-                                      language_code=language_var,
-                                      country_code=country_var)
+    json_results = single_term_to_JSON(search_terms,
+                                       language_code=language_var,
+                                       country_code=country_var)
 
     # TODO move plotting to its own function
     gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
     print(gender_buckets)
 
-    plot = Bar(gender_buckets,
+    # TODO the indices are off
+    age_buckets = buckets_to_series(json_results['facets']['ages']['buckets'])
+    age_range = pd.Series(range(MIN_AGE, MAX_AGE))
+    age_series = age_range.add(pd.Series(data=age_buckets)).fillna(0)
+    print(age_series)
+
+    gender_plot = Bar(gender_buckets,
                title="Gender distribution",
                logo=None,
                toolbar_location="below")
 
-    bokeh_script, gender_plot_div = components(plot)
+    age_plot = Bar(age_series,
+               title="Age distribution",
+               logo=None,
+               toolbar_location="below")
 
-    return flask.render_template('single_term.html',
+
+    bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
+
+    return flask.render_template('single_term_results.html',
                                  query=request_form["singleTermQuery"],
                                  bokeh_script=bokeh_script,
                                  gender_plot=gender_plot_div,
+                                 age_plot=age_plot_div,
                                  json_results=json.dumps(json_results, indent=True),
-                                 country_code=country_var
+                                 country_code=country_var,
+                                 map_views=MAP_VIEWS,
+                                 available_options=AVAILABLE_OPTIONS
                                  )
 
 
@@ -104,7 +121,7 @@ def buckets_to_series(bucket_dict):
     return pd.DataFrame(bucket_dict).set_index('val')['count']
 
 
-def search_single_term(search_term, country_code, language_code):
+def single_term_to_JSON(search_term, country_code, language_code):
     """
     search for a single term in a country and language
     """
@@ -118,9 +135,13 @@ def search_single_term(search_term, country_code, language_code):
                     "mean_age": "avg(age_i)"
                 }
             },
-            "nuts_2_regions": {
+            "ages": {
                 "type": "terms",
-                "field": "nuts_2_s"},
+                "field": "age_i"
+            },
+            "nuts_3_regions": {
+                "type": "terms",
+                "field": "nuts_3_s"},
             "mean_age": "avg(age_i)",
             "percentiles_age": "percentile(age_i, 25, 50, 75)"
         },
