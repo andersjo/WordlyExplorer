@@ -1,5 +1,4 @@
 import json
-
 import flask
 import pandas as pd
 import requests
@@ -18,31 +17,46 @@ HUMBOLDT_APP = flask.Flask(__name__)
 
 @HUMBOLDT_APP.route('/', methods=['GET', 'POST'])
 def welcome():
+    """
+    landing page with welcome message
+    :return:
+    """
     if request.method == 'POST':
         return do_single_search(request.form)
 
     else:
-        return flask.render_template('index.html')
+        return flask.render_template('index.html', available_options=AVAILABLE_OPTIONS)
+
 
 @HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
 def search():
     """
-    Displays the index page accessible at '/search'
+    Displays the search page accessible at '/search'
     """
     if request.method == 'POST':
         return do_single_search(request.form)
 
     else:
-        return flask.render_template('single_term.html')
+        return flask.render_template('single_term.html', available_options=AVAILABLE_OPTIONS)
+
 
 @HUMBOLDT_APP.route('/about')
 def about():
+    """
+    the page about us
+    :return:
+    """
     return flask.render_template('about.html')
 
 
 @HUMBOLDT_APP.route('/contact')
 def contact():
+    """
+    the contact info
+    :return:
+    """
     return flask.render_template('contact.html')
+
 
 @HUMBOLDT_APP.route('/maptest')
 def maptest():
@@ -51,7 +65,7 @@ def maptest():
 
 def do_single_search(request_form):
     """
-    search method called from both the welcome page and the search page
+    search method called from both welcome() and search()
     :param request_form:
     :return:
     """
@@ -76,14 +90,15 @@ def do_single_search(request_form):
                                  query=request_form["singleTermQuery"],
                                  bokeh_script=bokeh_script,
                                  gender_plot=gender_plot_div,
-                                 json_results=json.dumps(json_results, indent=True)
+                                 json_results=json.dumps(json_results, indent=True),
+                                 country_code=country_var
                                  )
 
 
 
 def buckets_to_series(bucket_dict):
-    """Converts a a list of buckets to a pd.Series.
-
+    """
+    Converts a a list of buckets to a pd.Series.
     Buckets are given as a list of JSON dicts, following the Solr buckets format.
     """
     return pd.DataFrame(bucket_dict).set_index('val')['count']

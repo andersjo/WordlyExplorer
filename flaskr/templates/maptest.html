@@ -6,16 +6,13 @@
 
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 
-    <!-- TopoJSON support !-->
+    <!-- TopoJSON support to get NUTS !-->
     <script src="http://d3js.org/topojson.v1.min.js"></script>
-
-
-
     <style type="text/css">
         #mapid {
             height: 400px;
             width: 500px;
-
+            margin: auto;
         }
     </style>
     <script language="javascript">
@@ -46,7 +43,7 @@
 
 
         document.addEventListener('DOMContentLoaded', function () {
-            var mymap = L.map('mapid').setView([51.505, -0.09], 4);
+            var mymap = L.map('mapid').setView([56, 10.5], 6);
             var marker = L.marker([51.5, -0.09]).addTo(mymap);
 
             L.tileLayer('https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -87,7 +84,7 @@
             }
 
 
-            $.getJSON("{{ url_for('static', filename='geo/nuts2.json') }}")
+            $.getJSON("{{ url_for('static', filename='geo/nuts3.json') }}")
                     .done(addTopoData);
 
         }, false);
@@ -97,6 +94,6 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css"/>
 
     <div id="mapid"></div>
-    <p>THis is where the map is</p>
+    <p>This is where the map is</p>
 
 {% endblock %}
