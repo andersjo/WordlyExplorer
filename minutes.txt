@@ -83,5 +83,5 @@ PLOTS/INFO:
 - number of men and women, as totals and percentages
 - age distro
 - two plots (by gender) over age
-
+- NUTS map
 

@@ -1,75 +1,39 @@
 import json
+
 import flask
-from flask import request
 import pandas as pd
 import requests
-import bokeh
 from bokeh.charts import Bar
-from bokeh.plotting import figure
 from bokeh.embed import components
+from flask import request
+from config import *
 
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
 
-# TODO move to separate file, and include map info
-SOLR_URL = "http://localhost:8983/solr/humboldt"
-SOLR_SELECT_URL = SOLR_URL + "/select?wt=json"
-SOLR_QUERY_URL = SOLR_URL + "/query"
+# TODO: add a pandas DataFrame with totals
 
-#TODO: add a pandas DataFrame with totals
-
-#TODO: side-by-side comparison
-
-#TODO: index page
+# TODO: side-by-side comparison
 
 
-@HUMBOLDT_APP.route('/')
+@HUMBOLDT_APP.route('/', methods=['GET', 'POST'])
 def welcome():
-    return flask.render_template('index.html')
+    if request.method == 'POST':
+        return do_single_search(request.form)
 
-
-
-@HUMBOLDT_APP.route('/maptest')
-def maptest():
-    return flask.render_template('maptest.html')
-
+    else:
+        return flask.render_template('index.html')
 
 @HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
-def index():
+def search():
     """
-    Displays the index page accessible at '/'
+    Displays the index page accessible at '/search'
     """
     if request.method == 'POST':
-        # print(request.form['query'])
-        # result = request.form['query']
-        search_terms = request.form["singleTermQuery"]
+        return do_single_search(request.form)
 
-        language_var, country_var = request.form["languageAndRegion"].split(':', 1)
-        json_results = search_single_term(search_terms,
-                                          language_code=language_var,
-                                          country_code=country_var)
-
-        # TODO move plotting to its own function
-        gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
-        print(gender_buckets)
-
-        plot = Bar(gender_buckets,
-                   title="Gender distribution",
-                   logo=None,
-                   toolbar_location="below")
-
-        bokeh_script, gender_plot_div = components(plot)
-
-        return flask.render_template('single_term.html',
-                                     query=request.form["singleTermQuery"],
-                                     bokeh_script=bokeh_script,
-                                     gender_plot=gender_plot_div,
-                                     json_results=json.dumps(json_results, indent=True)
-                                     )
     else:
         return flask.render_template('single_term.html')
-
-
 
 @HUMBOLDT_APP.route('/about')
 def about():
@@ -79,6 +43,42 @@ def about():
 @HUMBOLDT_APP.route('/contact')
 def contact():
     return flask.render_template('contact.html')
+
+@HUMBOLDT_APP.route('/maptest')
+def maptest():
+    return flask.render_template('maptest.html')
+
+
+def do_single_search(request_form):
+    """
+    search method called from both the welcome page and the search page
+    :param request_form:
+    :return:
+    """
+    search_terms = request_form["singleTermQuery"]
+    language_var, country_var = request_form["languageAndRegion"].split(':', 1)
+    json_results = search_single_term(search_terms,
+                                      language_code=language_var,
+                                      country_code=country_var)
+
+    # TODO move plotting to its own function
+    gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
+    print(gender_buckets)
+
+    plot = Bar(gender_buckets,
+               title="Gender distribution",
+               logo=None,
+               toolbar_location="below")
+
+    bokeh_script, gender_plot_div = components(plot)
+
+    return flask.render_template('single_term.html',
+                                 query=request_form["singleTermQuery"],
+                                 bokeh_script=bokeh_script,
+                                 gender_plot=gender_plot_div,
+                                 json_results=json.dumps(json_results, indent=True)
+                                 )
+
 
 
 def buckets_to_series(bucket_dict):
@@ -123,9 +123,7 @@ def search_single_term(search_term, country_code, language_code):
     return resp.json()
 
 
-
 if __name__ == '__main__':
     HUMBOLDT_APP.run(debug=True)
     # DebuggedApplication(HUMBOLDT_APP, evalex=True)
     # .run(debug=True)
-
