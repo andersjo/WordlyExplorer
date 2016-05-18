@@ -78,10 +78,13 @@ PLOTS/INFO:
 - two plots (by gender) over age
 - NUTS map
 
+=================================================================================================================
+
 TODO:
 - add combined fields: agegroup+gender, region+gender
 - add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
 - add two-term query
 - go live...
 
+Search for age returns weird numbers, not the correct ages. They get imported correctly, so not sure what is going on.
 

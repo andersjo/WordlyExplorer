@@ -67,14 +67,14 @@
                 accessToken: 'pk.eyJ1IjoiYW5kZXJzam8iLCJhIjoiY2lvOTBnajl6MDAwMnY4bTEwejFrODUwcSJ9.AwQTCWqByxT2OVta7NT68w'
             }).addTo(mymap);
 
-            // Augment leaflet with TopJSON support
+            // Augment leaflet with TopoJSON support
             // See THIS tutorial: http://blog.webkid.io/maps-with-leaflet-and-topojson/
 
             L.TopoJSON = L.GeoJSON.extend({
                 addData: function (jsonData) {
                     console.log("Adding some data that I got in JSON");
                     if (jsonData.type === "Topology") {
-                        // TODO: add resrtiction to selected country NUTS only
+                        // TODO: add restriction to selected country NUTS only
                         for (key in jsonData.objects) {
                             geojson = topojson.feature(jsonData, jsonData.objects[key]);
                             L.GeoJSON.prototype.addData.call(this, geojson);
@@ -94,10 +94,7 @@
                 topoLayer.addData(topoData);
                 topoLayer.addTo(mymap);
                 topoLayer.eachLayer(handleLayer)
-
-
             }
-
 
             $.getJSON("{{ url_for('static', filename='geo/nuts3.json') }}")
                     .done(addTopoData);

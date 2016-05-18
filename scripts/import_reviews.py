@@ -141,7 +141,6 @@ def read_json_line(line):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
             new_review['review_year'] = int(org_review['date'][:4])
 
-        # TODO: this might have a lot of variation. Replace this with a specified flag to set country during import?
         locations = user['location'].split(",")
         country_code = args.country_code#country_codes.get(new_review['country'])
         new_review['country'] = country_code

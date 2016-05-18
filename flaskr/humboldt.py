@@ -83,16 +83,14 @@ def do_single_search(request_form):
 
     # TODO the indices are off
     age_buckets = buckets_to_series(json_results['facets']['ages']['buckets'])
-    age_range = pd.Series(range(MIN_AGE, MAX_AGE))
-    age_series = age_range.add(pd.Series(data=age_buckets)).fillna(0)
-    print(age_series)
+    print(age_buckets)
 
     gender_plot = Bar(gender_buckets,
                title="Gender distribution",
                logo=None,
                toolbar_location="below")
 
-    age_plot = Bar(age_series,
+    age_plot = Bar(age_buckets,
                title="Age distribution",
                logo=None,
                toolbar_location="below")
@@ -132,16 +130,28 @@ def single_term_to_JSON(search_term, country_code, language_code):
                 "type": "terms",
                 "field": "gender_s",
                 "facet": {
-                    "mean_age": "avg(age_i)"
+                    "mean_age": "min(age_i)"
                 }
             },
             "ages": {
-                "type": "terms",
-                "field": "age_i"
+                "start" : MIN_AGE,
+                "end" : MAX_AGE,
+                "type": "range",
+                "field": "age_i",
+                "gap": 1,
+                "facet": {
+                    "genders":{
+                    "type": "terms",
+                    "field": "gender_s"
+                    }
+                }
+
             },
             "nuts_3_regions": {
                 "type": "terms",
-                "field": "nuts_3_s"},
+                "field": "nuts_3_s",
+                "limit": 1000
+            },
             "mean_age": "avg(age_i)",
             "percentiles_age": "percentile(age_i, 25, 50, 75)"
         },
