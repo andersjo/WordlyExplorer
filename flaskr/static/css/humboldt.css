@@ -47,3 +47,21 @@ body {
 	float: left;
 	padding-right: 0.3em;	
 }
+
+
+
+#mapid {
+    height: 400px;
+    width: 500px;
+    margin: auto;
+}
+
+#genderdistro {
+    align: center;
+    margin: auto;
+}
+
+#agedistro {
+    align: center;
+    margin: auto;
+}

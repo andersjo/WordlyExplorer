@@ -67,10 +67,7 @@ ACTION:
 - make bobble heads smaller and switch order: DONE
 - switch to NUTS-3: DONE
 - add bibtex ref and other citation stuff
-- intro page (link paper, explanation of data, and overview plus worked examples [with links])
-- get totals for each facet to compute percentages
-- include error handling if search term is not found
-- at the end of side-by-side, include links to the individual queries
+- intro page (link paper, explanation of data, and overview plus worked examples [with links]): DONE
 
 PLOTS/INFO:
 - number of men and women, as totals and percentages
@@ -84,7 +81,15 @@ TODO:
 - add combined fields: agegroup+gender, region+gender
 - add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
 - add two-term query
+- add worked examples
+- get totals for each facet to compute percentages
+- include error handling if search term is not found
+- at the end of side-by-side, include links to the individual queries
+- add link to results JSON
 - go live...
 
-Search for age returns weird numbers, not the correct ages. They get imported correctly, so not sure what is going on.
+- How do we create age-distro subplots for each gender?
+- What are we normalizing by?
+- can we restrict the NUTS-regions to ones starting with the country code or speed up otherwise?
+
 

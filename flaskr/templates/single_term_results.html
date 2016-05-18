@@ -32,7 +32,7 @@
     </style>
     <script language="javascript">
         function handleLayer(layer) {
-            console.log("Handling layer", layer.feature.id)
+            console.log("Handling layer", layer.feature.id.toLowerCase().substring(0,2))
 
             if (Math.random() > 0.5) {
                 layer.setStyle({

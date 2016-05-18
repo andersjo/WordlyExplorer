@@ -17,26 +17,29 @@
     </style>
     <script language="javascript">
         function handleLayer(layer) {
-            console.log("Handling layer", layer.feature.id)
+            console.log(layer.feature.id.toLowerCase().substring(0,2))
+            <!--if (layer.feature.id.toLowerCase().substring(0,2)) {-->
+                console.log("Handling layer", layer.feature.id)
 
-            if (Math.random() > 0.5) {
-                layer.setStyle({
-                    fillColor: "green",
-                    fillOpacity: 0.5,
-                    color: 'red',
-                    weight: 1,
-                    opacity: 0.5
-                });
+                if (Math.random() > 0.5) {
+                    layer.setStyle({
+                        fillColor: "green",
+                        fillOpacity: 0.5,
+                        color: 'red',
+                        weight: 1,
+                        opacity: 0.5
+                    });
 
-            } else {
-                layer.setStyle({
-                    fillColor: "yellow",
-                    fillOpacity: 0.5,
-                    color: '#555',
-                    weight: 1,
-                    opacity: 0.5
-                });
-            }
+                } else {
+                    layer.setStyle({
+                        fillColor: "yellow",
+                        fillOpacity: 0.5,
+                        color: '#555',
+                        weight: 1,
+                        opacity: 0.5
+                    });
+                }
+            <!--}-->
 
 
         }

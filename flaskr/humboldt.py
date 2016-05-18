@@ -6,6 +6,8 @@ from bokeh.charts import Bar
 from bokeh.embed import components
 from flask import request
 from config import *
+# import seaborn as sb
+# sb.set_context('notebook')
 
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
@@ -64,6 +66,16 @@ def contact():
 def maptest():
     return flask.render_template('maptest.html')
 
+@HUMBOLDT_APP.route('/comparisontest')
+def comparisontest():
+    if request.method == 'POST':
+        return do_double_search(request.form)
+    else:
+        return flask.render_template('comparison_test.html',
+                                     map_views=MAP_VIEWS,
+                                     available_options=AVAILABLE_OPTIONS)
+
+
 
 def do_single_search(request_form):
     """
@@ -77,23 +89,31 @@ def do_single_search(request_form):
                                        language_code=language_var,
                                        country_code=country_var)
 
-    # TODO move plotting to its own function
-    gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
+    total_found = json_results['facets']['count']
+
+    # TODO: what is our denominator? Number of matches or total population???
+    gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets']) / total_found
+    age_buckets = buckets_to_series(json_results['facets']['ages']['buckets']) / total_found
+
     print(gender_buckets)
-
-    # TODO the indices are off
-    age_buckets = buckets_to_series(json_results['facets']['ages']['buckets'])
     print(age_buckets)
+    print()
 
+
+    # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
                title="Gender distribution",
                logo=None,
-               toolbar_location="below")
+               toolbar_location="below",
+                      width=300,
+                      height=400)
 
     age_plot = Bar(age_buckets,
                title="Age distribution",
                logo=None,
-               toolbar_location="below")
+               toolbar_location="below",
+                      width=800,
+                      height=400)
 
 
     bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
@@ -167,6 +187,64 @@ def single_term_to_JSON(search_term, country_code, language_code):
         print("Request failed: " + resp.text)
         resp.raise_for_status()
     return resp.json()
+
+
+
+def do_double_search(request_form):
+    """
+    search method called from both welcome() and search()
+    :param request_form:
+    :return:
+    """
+    search_term1 = request_form["doubleTermQuery1"]
+    search_term2 = request_form["doubleTermQuery2"]
+    language_var, country_var = request_form["languageAndRegion"].split(':', 1)
+    json_results1 = single_term_to_JSON(search_term1,
+                                       language_code=language_var,
+                                       country_code=country_var)
+    json_results2 = single_term_to_JSON(search_term2,
+                                       language_code=language_var,
+                                       country_code=country_var)
+
+    total_found = json_results1['facets']['count'] + json_results2['facets']['count']
+
+    # TODO: what is our denominator? Number of matches or total population???
+    gender_buckets = buckets_to_series(json_results1['facets']['genders']['buckets']) / total_found
+    age_buckets = buckets_to_series(json_results1['facets']['ages']['buckets']) / total_found
+
+    print(gender_buckets)
+    print(age_buckets)
+    print()
+
+
+    # TODO move plotting to its own function
+    gender_plot = Bar(gender_buckets,
+               title="Gender distribution",
+               logo=None,
+               toolbar_location="below",
+                      width=300,
+                      height=400)
+
+    age_plot = Bar(age_buckets,
+               title="Age distribution",
+               logo=None,
+               toolbar_location="below",
+                      width=800,
+                      height=400)
+
+
+    bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
+
+    return flask.render_template('double_term_results.html',
+                                 query=request_form["singleTermQuery"],
+                                 bokeh_script=bokeh_script,
+                                 gender_plot=gender_plot_div,
+                                 age_plot=age_plot_div,
+                                 json_results=json.dumps(json_results1, indent=True),
+                                 country_code=country_var,
+                                 map_views=MAP_VIEWS,
+                                 available_options=AVAILABLE_OPTIONS
+                                 )
 
 
 if __name__ == '__main__':
