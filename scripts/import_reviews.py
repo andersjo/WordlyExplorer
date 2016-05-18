@@ -7,6 +7,8 @@ from pathlib import Path
 import numpy as np
 import requests
 
+NOT_AVAIL = "NA"
+
 parser = argparse.ArgumentParser(description="Import reviews into solr database")
 parser.add_argument('file', type=Path)
 parser.add_argument('--locations', type=Path, required=True)
@@ -96,7 +98,14 @@ def map_solr_fields(review):
         'nuts_2': 'nuts_2_s',
         'nuts_3': 'nuts_3_s',
         'company_id': 'company_id_s',
-        'langid': 'langid_s'
+        'langid': 'langid_s',
+        'age_s': 'age_s',
+        'review_year_s': 'review_year_s',
+        'nuts_3_and_age': 'nuts_3_and_age_s',
+        'nuts_3_and_gender': 'nuts_3_and_gender_s',
+        'nuts_3_and_gender': 'nuts_3_and_gender_s',
+        'nuts_3_and_gender_and_age': 'nuts_3_and_gender_and_age_s',
+        'gender_and_age': 'gender_and_age_s'
     }
 
     return {MAPPING[key]: val
@@ -133,13 +142,16 @@ def read_json_line(line):
                       'company_id': org_review['company_id'],
                       'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),
-                      'gender': user.get('gender', 'NA'),
+                      'gender': user.get('gender', NOT_AVAIL),
                       'langid': org_review['langid']
                       }
 
         if user.get('birth_year') and org_review.get('date'):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
             new_review['review_year'] = int(org_review['date'][:4])
+
+        new_review['age_s'] = str(new_review.get('age', NOT_AVAIL))
+        new_review['review_year_s'] = str(new_review.get('review_year', NOT_AVAIL))
 
         locations = user['location'].split(",")
         country_code = args.country_code#country_codes.get(new_review['country'])
@@ -155,11 +167,20 @@ def read_json_line(line):
             if coords:
                 new_review['location'] = coords
                 new_review['location_rpt'] = coords
+        else:
+            new_review['city'] = NOT_AVAIL
 
-        if 'NUTS-1' in user:
-            new_review['nuts_1'] = user['NUTS-1']
-            new_review['nuts_2'] = user['NUTS-2']
-            new_review['nuts_3'] = user['NUTS-3']
+        new_review['nuts_1'] = user.get('NUTS-1', NOT_AVAIL)
+        new_review['nuts_2'] = user.get('NUTS-2', NOT_AVAIL)
+        new_review['nuts_3'] = user.get('NUTS-3', NOT_AVAIL)
+
+        # Combination fields
+        new_review['nuts_3_and_age'] = ":".join([new_review['nuts_3'], new_review['age_s']])
+        new_review['nuts_3_and_gender'] = ":".join([new_review['nuts_3'], new_review['gender']])
+        new_review['nuts_3_and_gender_and_age'] = ":".join([new_review['nuts_3'],
+                                                            new_review['gender'],
+                                                            new_review['age_s']])
+        new_review['gender_and_age'] = ":".join([new_review['gender'], new_review['age_s']])
 
         yield new_review
 

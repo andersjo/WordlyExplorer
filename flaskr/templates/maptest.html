@@ -82,10 +82,7 @@
                 topoLayer.addData(topoData);
                 topoLayer.addTo(mymap);
                 topoLayer.eachLayer(handleLayer)
-
-
             }
-
 
             $.getJSON("{{ url_for('static', filename='geo/nuts3.json') }}")
                     .done(addTopoData);

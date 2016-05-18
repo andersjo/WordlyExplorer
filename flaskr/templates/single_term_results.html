@@ -5,17 +5,21 @@
 {% block content %}
     {{ bokeh_script | safe }}
 
+
+
+    <div>
+    {% include 'single_search_bar.html' %}
+    </div>
+
+
     <div>
     You searched for <em>{{ query }}</em>. Getting you some results.
     </div>
 
-    <div>
-    {{ gender_plot | safe }}
-    </div>
-
-
-    <div>
-    {{ age_plot | safe }}
+    <h3>Age and gender</h3>
+    <div class="row">
+        <div class="col-md-4">{{ gender_plot | safe }}</div>
+        <div class="col-md-8">{{ age_plot | safe }}</div>
     </div>
 
 
@@ -117,9 +121,6 @@
     {{ json_results }}
     </pre>
 
-    <p>New search:
-    {% include 'single_search_bar.html' %}
-    </p>
 
 {% endblock %}
 

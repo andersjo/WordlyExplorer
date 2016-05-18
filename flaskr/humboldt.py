@@ -5,7 +5,14 @@ import requests
 from bokeh.charts import Bar
 from bokeh.embed import components
 from flask import request
-from config import *
+
+from config import SOLR_URL, SOLR_QUERY_URL, SOLR_SELECT_URL
+from config import MIN_AGE, MAX_AGE
+from config import AVAILABLE_OPTIONS
+from config import MAP_VIEWS
+
+
+# from config import SOLR_URL, SOLR_SELECT_URL
 # import seaborn as sb
 # sb.set_context('notebook')
 
