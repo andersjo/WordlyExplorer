@@ -18,9 +18,9 @@
     <script language="javascript">
         function handleLayer(layer) {
             console.log(layer.feature.id.toLowerCase().substring(0,2))
-            <!--if (layer.feature.id.toLowerCase().substring(0,2)) {-->
                 console.log("Handling layer", layer.feature.id)
 
+            if (layer.feature.id.toLowerCase().substring(0,2) == 'dk') {
                 if (Math.random() > 0.5) {
                     layer.setStyle({
                         fillColor: "green",
@@ -39,7 +39,7 @@
                         opacity: 0.5
                     });
                 }
-            <!--}-->
+            }
 
 
         }

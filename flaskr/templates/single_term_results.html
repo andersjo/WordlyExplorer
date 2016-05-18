@@ -33,26 +33,34 @@
     <script language="javascript">
         function handleLayer(layer) {
             console.log("Handling layer", layer.feature.id.toLowerCase().substring(0,2))
+            console.log("{{ country_code }}")
+            if (layer.feature.id.toLowerCase().substring(0,2) == "{{ country_code }}") {
 
-            if (Math.random() > 0.5) {
+                if (Math.random() > 0.5) {
+                    layer.setStyle({
+                        fillColor: "green",
+                        fillOpacity: 0.5,
+                        color: 'red',
+                        weight: 1,
+                        opacity: 0.5
+                    });
+
+                } else {
+                    layer.setStyle({
+                        fillColor: "yellow",
+                        fillOpacity: 0.5,
+                        color: '#555',
+                        weight: 1,
+                        opacity: 0.5
+                    });
+                }
+            } else{
                 layer.setStyle({
-                    fillColor: "green",
-                    fillOpacity: 0.5,
-                    color: 'red',
-                    weight: 1,
-                    opacity: 0.5
+                    weight: 0,
+                    opacity: 0.0
                 });
 
-            } else {
-                layer.setStyle({
-                    fillColor: "yellow",
-                    fillOpacity: 0.5,
-                    color: '#555',
-                    weight: 1,
-                    opacity: 0.5
-                });
             }
-
 
         }
 
@@ -62,7 +70,7 @@
 
             L.tileLayer('https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}', {
                 attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-                maxZoom: 18,
+                maxZoom: 7,
                 id: 'humboldt',
                 accessToken: 'pk.eyJ1IjoiYW5kZXJzam8iLCJhIjoiY2lvOTBnajl6MDAwMnY4bTEwejFrODUwcSJ9.AwQTCWqByxT2OVta7NT68w'
             }).addTo(mymap);
