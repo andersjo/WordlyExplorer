@@ -106,8 +106,7 @@ def do_single_search(request_form):
                                                    'gender_and_age')
     age_gender_buckets['count'] /= total_found
 
-    print(age_gender_buckets[(age_gender_buckets['age'] >= MIN_AGE) & (age_gender_buckets['age'] <= MAX_AGE)])
-    print()
+    age_gender_buckets = age_gender_buckets[(age_gender_buckets['age'] <= MAX_AGE) & (age_gender_buckets['age'] >=MIN_AGE) & (age_gender_buckets['gender'] != NOT_AVAIL)].sort('age')
 
     # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
@@ -125,11 +124,17 @@ def do_single_search(request_form):
                    height=400)
 
     age_gender_plot = Bar(age_gender_buckets,
-                   title="Age distribution by gender",
-                   logo=None,
-                   toolbar_location="below",
-                   width=800,
-                   height=400)
+                          group='gender',
+                          label='age',
+                          values='count',
+                          title="Age distribution by gender",
+                          logo=None,
+                          toolbar_location="below",
+                          width=800,
+                          height=400,
+                          legend='top_right',
+                          color=['blue', 'green'])
+
 
     bokeh_script, (gender_plot_div, age_plot_div, age_gender_plot_div) = components((gender_plot, age_plot, age_gender_plot))
 
