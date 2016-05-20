@@ -99,14 +99,16 @@ def do_single_search(request_form):
 
     total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
 
-    # TODO: what is our denominator? Number of matches or total population???
-    gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets']) / total_found
+    gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
+    gender_buckets = gender_buckets[[val for val in gender_buckets.index if val != NOT_AVAIL]] / total_found
     age_buckets = buckets_to_series(json_results['facets']['ages']['buckets']) / total_found
     age_gender_buckets = compound_bucket_to_series(json_results['facets']['gender_and_age']['buckets'],
                                                    'gender_and_age')
     age_gender_buckets['count'] /= total_found
-
     age_gender_buckets = age_gender_buckets[(age_gender_buckets['age'] <= MAX_AGE) & (age_gender_buckets['age'] >=MIN_AGE) & (age_gender_buckets['gender'] != NOT_AVAIL)].sort('age')
+
+    # TODO: get total count per region and normalize by that?
+    nuts_buckets = (buckets_to_series(json_results['facets']['nuts_3_regions']['buckets']) / total_found).to_json()
 
     # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
@@ -130,7 +132,7 @@ def do_single_search(request_form):
                           title="Age distribution by gender",
                           logo=None,
                           toolbar_location="below",
-                          width=800,
+                          width=1200,
                           height=400,
                           legend='top_right',
                           color=['blue', 'green'])
@@ -147,6 +149,7 @@ def do_single_search(request_form):
                                  json_results=json.dumps(json_results, indent=True),
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
+                                 nuts_buckets=nuts_buckets,
                                  available_options=AVAILABLE_OPTIONS
                                  )
 

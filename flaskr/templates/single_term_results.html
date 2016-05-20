@@ -3,62 +3,42 @@
 {% block title %}Search results{% endblock %}
 
 {% block content %}
-    {{ bokeh_script | safe }}
+   <script language="javascript">
+        var nutsdata = {{ nuts_buckets|safe }};
+        <!--console.log("Look:", nutsdata)-->
 
-
-
-    <div>
-    {% include 'single_search_bar.html' %}
-    </div>
-
-
-    <div>
-    You searched for <em>{{ query }}</em>. Getting you some results.
-    </div>
-
-    <h3>Age and gender</h3>
-    <div class="row">
-        <div class="col-md-4">{{ gender_plot | safe }}</div>
-        <div class="col-md-8">{{ age_plot | safe }}</div>
-        <div class="col-md-8">{{ age_gender_plot | safe }}</div>
-    </div>
-
-
-    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-
-    <!-- TopoJSON support to get NUTS !-->
-    <script src="http://d3js.org/topojson.v1.min.js"></script>
-    <style type="text/css">
-        #mapid {
-            height: 400px;
-            width: 500px;
-            margin: auto;
-        }
-    </style>
-    <script language="javascript">
         function handleLayer(layer) {
-            console.log("Handling layer", layer.feature.id.toLowerCase().substring(0,2))
-            console.log("{{ country_code }}")
+
             if (layer.feature.id.toLowerCase().substring(0,2) == "{{ country_code }}") {
+                var nuts3 = layer.feature.id;
+                console.log("Handling layer", nuts3)
+                console.log(nutsdata[nuts3])
+                layer.setStyle({
+                    fillColor: "red",
+                    fillOpacity: nutsdata[nuts3],
+                    color: 'red',
+                    weight: 1,
+                    opacity: 1
+                });
 
-                if (Math.random() > 0.5) {
-                    layer.setStyle({
-                        fillColor: "green",
-                        fillOpacity: 0.5,
-                        color: 'red',
-                        weight: 1,
-                        opacity: 0.5
-                    });
+                <!--if (Math.random() > 0.5) {-->
+                    <!--layer.setStyle({-->
+                        <!--fillColor: "green",-->
+                        <!--fillOpacity: 0.5,-->
+                        <!--color: 'red',-->
+                        <!--weight: 1,-->
+                        <!--opacity: 0.5-->
+                    <!--});-->
 
-                } else {
-                    layer.setStyle({
-                        fillColor: "yellow",
-                        fillOpacity: 0.5,
-                        color: '#555',
-                        weight: 1,
-                        opacity: 0.5
-                    });
-                }
+                <!--} else {-->
+                    <!--layer.setStyle({-->
+                        <!--fillColor: "yellow",-->
+                        <!--fillOpacity: 0.5,-->
+                        <!--color: '#555',-->
+                        <!--weight: 1,-->
+                        <!--opacity: 0.5-->
+                    <!--});-->
+                <!--}-->
             } else{
                 layer.setStyle({
                     weight: 0,
@@ -114,13 +94,30 @@
 
         }, false);
     </script>
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css"/>
+
+    {{ bokeh_script | safe }}
+
+    <div>
+    {% include 'single_search_bar.html' %}
+    </div>
+
+
+    <div>
+    You searched for <em>{{ query }}</em>. Getting you some results.
+    </div>
+
+    <h3>Age and gender</h3>
+    <div class="row">
+        <div class="col-md-4">{{ gender_plot | safe }}</div>
+        <div class="col-md-8">{{ age_plot | safe }}</div>
+        <div class="col-md-8">{{ age_gender_plot | safe }}</div>
+    </div>
 
     <div id="mapid"></div>
 
-    <pre>
-    {{ json_results }}
-    </pre>
+    <!--<pre>-->
+    <!--{{ json_results }}-->
+    <!--</pre>-->
 
 
 {% endblock %}
