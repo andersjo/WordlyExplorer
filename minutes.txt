@@ -79,7 +79,8 @@ PLOTS/INFO:
 
 TODO:
 - get totals for each facet to compute percentages
-- add two-term query
+- get NUTS info into javascript
+- add two-term query results
 - add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
 - add combined fields: agegroup+gender, region+gender
 - add worked examples

@@ -11,11 +11,6 @@ from config import MIN_AGE, MAX_AGE
 from config import AVAILABLE_OPTIONS
 from config import MAP_VIEWS
 
-
-# from config import SOLR_URL, SOLR_SELECT_URL
-# import seaborn as sb
-# sb.set_context('notebook')
-
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
 

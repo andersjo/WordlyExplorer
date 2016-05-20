@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import requests
+import sys
 
 NOT_AVAIL = "NA"
 
@@ -145,6 +146,10 @@ def read_json_line(line):
                       'gender': user.get('gender', NOT_AVAIL),
                       'langid': org_review['langid']
                       }
+
+        # take care of None values
+        if new_review['gender'] is None:
+                new_review['gender'] = NOT_AVAIL
 
         if user.get('birth_year') and org_review.get('date'):
             new_review['age'] = int(org_review['date'][:4]) - int(user['birth_year'])
