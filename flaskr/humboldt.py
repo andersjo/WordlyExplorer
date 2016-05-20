@@ -1,19 +1,21 @@
 import json
+
 import flask
 import pandas as pd
 import requests
 from bokeh.charts import Bar
 from bokeh.embed import components
-from flask import request
-
-from config import SOLR_URL, SOLR_QUERY_URL, SOLR_SELECT_URL
-from config import MIN_AGE, MAX_AGE
 from config import AVAILABLE_OPTIONS
 from config import MAP_VIEWS
+from config import MIN_AGE, MAX_AGE
+from config import NOT_AVAIL
+from config import SOLR_QUERY_URL
 from config import TOTALS
+from flask import request
 
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
+
 
 # TODO: add a pandas DataFrame with totals
 
@@ -72,6 +74,7 @@ def contact():
 def maptest():
     return flask.render_template('maptest.html')
 
+
 @HUMBOLDT_APP.route('/comparisontest')
 def comparisontest():
     if request.method == 'POST':
@@ -80,7 +83,6 @@ def comparisontest():
         return flask.render_template('comparison_test.html',
                                      map_views=MAP_VIEWS,
                                      available_options=AVAILABLE_OPTIONS)
-
 
 
 def do_single_search(request_form):
@@ -100,41 +102,75 @@ def do_single_search(request_form):
     # TODO: what is our denominator? Number of matches or total population???
     gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets']) / total_found
     age_buckets = buckets_to_series(json_results['facets']['ages']['buckets']) / total_found
+    age_gender_buckets = compound_bucket_to_series(json_results['facets']['gender_and_age']['buckets'],
+                                                   'gender_and_age')
+    age_gender_buckets['count'] /= total_found
 
-    print(gender_buckets)
-    print(age_buckets)
+    print(age_gender_buckets[(age_gender_buckets['age'] >= MIN_AGE) & (age_gender_buckets['age'] <= MAX_AGE)])
     print()
-
 
     # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
-               title="Gender distribution",
-               logo=None,
-               toolbar_location="below",
+                      title="Gender distribution",
+                      logo=None,
+                      toolbar_location="below",
                       width=300,
-                      height=400)
+                      height=400, webgl=True)
 
     age_plot = Bar(age_buckets,
-               title="Age distribution",
-               logo=None,
-               toolbar_location="below",
-                      width=800,
-                      height=400)
+                   title="Age distribution",
+                   logo=None,
+                   toolbar_location="below",
+                   width=800,
+                   height=400)
 
+    age_gender_plot = Bar(age_gender_buckets,
+                   title="Age distribution by gender",
+                   logo=None,
+                   toolbar_location="below",
+                   width=800,
+                   height=400)
 
-    bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
+    bokeh_script, (gender_plot_div, age_plot_div, age_gender_plot_div) = components((gender_plot, age_plot, age_gender_plot))
 
     return flask.render_template('single_term_results.html',
                                  query=request_form["singleTermQuery"],
                                  bokeh_script=bokeh_script,
                                  gender_plot=gender_plot_div,
                                  age_plot=age_plot_div,
+                                 age_gender_plot=age_gender_plot_div,
                                  json_results=json.dumps(json_results, indent=True),
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
                                  available_options=AVAILABLE_OPTIONS
                                  )
 
+
+def compound_bucket_to_series(count_dict_list, compound_field):
+    """
+    convert compound fields to pd.DataFrame
+    :param count_dict_list:
+    :param compound_field:
+    :return:
+    """
+    field_parts = compound_field.split("_and_")
+
+    rows = []
+    for count_dict in count_dict_list:
+        value_parts = count_dict["val"].split(":")
+        row = {"count": count_dict["count"]}
+        for field, value in zip(field_parts, value_parts):
+            if field == 'age':
+                try:
+                    row[field] = int(value)
+                except ValueError:
+                    row[field] = -1
+            else:
+                row[field] = value
+
+        rows.append(row)
+
+    return pd.DataFrame(rows)
 
 
 def buckets_to_series(bucket_dict):
@@ -160,8 +196,8 @@ def single_term_to_JSON(search_term, country_code, language_code):
                 }
             },
             "ages": {
-                "start" : MIN_AGE,
-                "end" : MAX_AGE,
+                "start": MIN_AGE,
+                "end": MAX_AGE,
                 "type": "range",
                 "field": "age_i",
                 "gap": 1
@@ -176,7 +212,12 @@ def single_term_to_JSON(search_term, country_code, language_code):
             "nuts_3_regions": {
                 "type": "terms",
                 "field": "nuts_3_s",
-                "limit": 1000
+                "limit": -1
+            },
+            "gender_and_age": {
+                "type": "terms",
+                "field": "gender_and_age_s",
+                "limit": -1
             },
             "mean_age": "avg(age_i)",
             "percentiles_age": "percentile(age_i, 25, 50, 75)"
@@ -195,7 +236,6 @@ def single_term_to_JSON(search_term, country_code, language_code):
     return resp.json()
 
 
-
 def do_double_search(request_form):
     """
     search method called from both welcome() and search()
@@ -206,11 +246,11 @@ def do_double_search(request_form):
     search_term2 = request_form["doubleTermQuery2"]
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
     json_results1 = single_term_to_JSON(search_term1,
-                                       language_code=language_var,
-                                       country_code=country_var)
+                                        language_code=language_var,
+                                        country_code=country_var)
     json_results2 = single_term_to_JSON(search_term2,
-                                       language_code=language_var,
-                                       country_code=country_var)
+                                        language_code=language_var,
+                                        country_code=country_var)
 
     total_found = json_results1['facets']['count'] + json_results2['facets']['count']
 
@@ -222,22 +262,20 @@ def do_double_search(request_form):
     print(age_buckets)
     print()
 
-
     # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
-               title="Gender distribution",
-               logo=None,
-               toolbar_location="below",
+                      title="Gender distribution",
+                      logo=None,
+                      toolbar_location="below",
                       width=300,
                       height=400)
 
     age_plot = Bar(age_buckets,
-               title="Age distribution",
-               logo=None,
-               toolbar_location="below",
-                      width=800,
-                      height=400)
-
+                   title="Age distribution",
+                   logo=None,
+                   toolbar_location="below",
+                   width=800,
+                   height=400)
 
     bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
 
