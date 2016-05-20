@@ -4,6 +4,15 @@
 
 {% block content %}
 
+<div>
+Currently available records:
+  <ul>
+{% for (language_code, country_code, language_name, country_name) in available_options %}
+  <li>{{language_name}}/{{country_name}}: {{totals[totals['country_code'] == country_code]['count'].sum()}}</li>
+{% endfor %}
+  </ul>
+</div>
+
 <div role="tabpanel">
 
   <!-- Nav tabs -->
@@ -25,6 +34,7 @@
 </div>
 
 </div>
+
 
 
 {% endblock %}

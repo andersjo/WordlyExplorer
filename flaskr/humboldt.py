@@ -10,6 +10,7 @@ from config import SOLR_URL, SOLR_QUERY_URL, SOLR_SELECT_URL
 from config import MIN_AGE, MAX_AGE
 from config import AVAILABLE_OPTIONS
 from config import MAP_VIEWS
+from config import TOTALS
 
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
@@ -29,7 +30,9 @@ def welcome():
         return do_single_search(request.form)
 
     else:
-        return flask.render_template('index.html', map_views=MAP_VIEWS, available_options=AVAILABLE_OPTIONS)
+        return flask.render_template('index.html', map_views=MAP_VIEWS,
+                                     available_options=AVAILABLE_OPTIONS,
+                                     totals=TOTALS)
 
 
 @HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
@@ -43,7 +46,8 @@ def search():
     else:
         return flask.render_template('search.html',
                                      map_views=MAP_VIEWS,
-                                     available_options=AVAILABLE_OPTIONS)
+                                     available_options=AVAILABLE_OPTIONS,
+                                     totals=TOTALS)
 
 
 @HUMBOLDT_APP.route('/about')
@@ -91,7 +95,7 @@ def do_single_search(request_form):
                                        language_code=language_var,
                                        country_code=country_var)
 
-    total_found = json_results['facets']['count']
+    total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
 
     # TODO: what is our denominator? Number of matches or total population???
     gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets']) / total_found
@@ -160,13 +164,13 @@ def single_term_to_JSON(search_term, country_code, language_code):
                 "end" : MAX_AGE,
                 "type": "range",
                 "field": "age_i",
-                "gap": 1,
-                "facet": {
-                    "genders":{
-                    "type": "terms",
-                    "field": "gender_s"
-                    }
-                }
+                "gap": 1
+                # "facet": {
+                #     "genders":{
+                #     "type": "terms",
+                #     "field": "gender_s"
+                #     }
+                # }
 
             },
             "nuts_3_regions": {

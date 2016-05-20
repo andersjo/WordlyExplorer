@@ -1,17 +1,15 @@
 import json
-from sys import stderr
-
 import requests
 import pandas as pd
 import numpy as np
-
+from sys import stderr
 from config import SOLR_QUERY_URL
 from config import MIN_AGE, MAX_AGE
 
 def terms_facet(name, **kwargs):
     facet = {"type": "terms",
              "field": name,
-             "limit": 10000}
+             "limit": -1}
 
     if len(kwargs):
         facet["facet"] = kwargs
@@ -100,4 +98,7 @@ def simple_query_totals():
 
 if __name__ == '__main__':
     totals = simple_query_totals()
-    print(totals)
+    # print(totals)
+    # fields
+    # age   count gender nuts_3 country_code
+    print(totals[(totals['gender'] == 'M') & (totals['country_code'] == 'uk')]['count'].sum())
