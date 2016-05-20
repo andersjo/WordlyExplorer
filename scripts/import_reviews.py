@@ -193,7 +193,13 @@ locdata = location_data(args.locations)
 
 BATCH_SIZE = 25
 batch = []
-for line in islice(args.file.open(), None):
+for line_no, line in enumerate(islice(args.file.open(), None)):
+    if line_no > 0:
+        if line_no%1000 == 0:
+            print(line_no, file=sys.stderr, flush=True)
+        elif line_no%100 == 0:
+            print('.', end='', file=sys.stderr, flush=True)
+
     for review in read_json_line(line):
         batch.append(map_solr_fields(review))
 
