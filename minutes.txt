@@ -80,19 +80,19 @@ PLOTS/INFO:
 - get totals for each facet to compute percentages: DONE
 - get NUTS info into javascript: DONE
 - add combined fields: agegroup+gender, region+gender: DONE
+- add two-term query results: DONE
+- add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency: DONE
+- How do we best create age-distro subplots for each gender? DONE???
 
 ================================================================================================================
 
 TODO:
-- add two-term query results
-- add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency
 - add worked examples
 - include error handling if search term is not found
 - at the end of side-by-side, include links to the individual queries
 - add link to results JSON
 - go live...
 
-- How do we best create age-distro subplots for each gender? DONE???
 - What are we normalizing by? Currently: all reviews for a country. Is that what we want: makes NUTS region coloring barely visible.
 
 
