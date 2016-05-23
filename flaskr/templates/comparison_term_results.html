@@ -115,6 +115,19 @@
 
     <!--<div id="mapid"></div>-->
 
+    <p><br/></p>
+
+    <div>
+        {{ gender_comparison | safe }}
+        {{ gender_stats_msg | safe }}
+    </div>
+
+    <div>
+        {{ age_comparison | safe }}
+        {{ age_stats_msg | safe }}
+    </div>
+
+
     <pre>
     {{ json_results1 }}
     </pre>

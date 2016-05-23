@@ -1,4 +1,5 @@
 import json
+from _bisect import bisect
 
 import flask
 import pandas as pd
@@ -11,7 +12,9 @@ from config import MIN_AGE, MAX_AGE
 from config import NOT_AVAIL
 from config import SOLR_QUERY_URL
 from config import TOTALS
+from config import P_LEVELS
 from flask import request
+from scipy.stats import chi2_contingency, spearmanr
 
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
@@ -101,7 +104,6 @@ def do_single_search(request_form):
                                        country_code=country_var)
 
     total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
-
 
     gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
     gender_buckets = gender_buckets[[val for val in gender_buckets.index if val != NOT_AVAIL]] / total_found
@@ -268,13 +270,44 @@ def do_double_search(request_form):
                                         language_code=language_var,
                                         country_code=country_var)
 
+    total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
+
+    gender_buckets1 = buckets_to_series(json_results1['facets']['genders']['buckets'])
+    gender_buckets2 = buckets_to_series(json_results2['facets']['genders']['buckets'])
+    gender_buckets1 = gender_buckets1[[val for val in gender_buckets1.index if val != NOT_AVAIL]]
+    gender_buckets2 = gender_buckets2[[val for val in gender_buckets2.index if val != NOT_AVAIL]]
+
+    gender_comparison = pd.DataFrame(data={search_term1:gender_buckets1.values, search_term2:gender_buckets2.values}, index=gender_buckets1.index)
+    chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
+    gender_stats_level = bisect(P_LEVELS, pvalue)
+
+    if gender_stats_level == len(P_LEVELS):
+        gender_stats_msg = "Gender difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
+    else:
+        gender_stats_msg = "Gender difference is statistically significant at p < %s" % (P_LEVELS[gender_stats_level])
 
 
-    # bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
+    age_buckets1 = buckets_to_series(json_results1['facets']['ages']['buckets'])
+    age_buckets2 = buckets_to_series(json_results2['facets']['ages']['buckets'])
+
+    print(age_buckets1, age_buckets2)
+    age_comparison = pd.DataFrame(data={search_term1:age_buckets1.values, search_term2:age_buckets2.values}, index=age_buckets1.index)
+    r, pvalue = spearmanr(age_comparison)
+    age_stats_level = bisect(P_LEVELS, pvalue)
+
+    if age_stats_level == len(P_LEVELS):
+        age_stats_msg = "Age difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
+    else:
+        age_stats_msg = "Age difference is statistically significant at p < %s" % (P_LEVELS[age_stats_level])
+
 
     return flask.render_template('comparison_term_results.html',
                                  query1=request_form["doubleTermQuery1"],
                                  query2=request_form["doubleTermQuery2"],
+                                 gender_comparison=gender_comparison.to_html(),
+                                 gender_stats_msg=gender_stats_msg,
+                                 age_comparison=age_comparison.to_html(),
+                                 age_stats_msg=age_stats_msg,
                                  # bokeh_script=bokeh_script,
                                  # gender_plot=gender_plot_div,
                                  # age_plot=age_plot_div,
