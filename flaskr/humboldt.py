@@ -106,14 +106,14 @@ def do_single_search(request_form):
     if json_results['response']['numFound'] == 0:
         return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS, search_mode='single')
 
-    total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
+    country_total = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
 
     gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
-    gender_buckets = gender_buckets[[val for val in gender_buckets.index if val != NOT_AVAIL]] / total_found
-    age_buckets = buckets_to_series(json_results['facets']['ages']['buckets']) / total_found
+    gender_buckets = gender_buckets[[val for val in gender_buckets.index if val != NOT_AVAIL]] / country_total
+    age_buckets = buckets_to_series(json_results['facets']['ages']['buckets']) / country_total
     age_gender_buckets = compound_bucket_to_series(json_results['facets']['gender_and_age']['buckets'],
                                                    'gender_and_age')
-    age_gender_buckets['count'] /= total_found
+    age_gender_buckets['count'] /= country_total
     age_gender_buckets = age_gender_buckets[
         (age_gender_buckets['age'] <= MAX_AGE) & (age_gender_buckets['age'] >= MIN_AGE) & (
         age_gender_buckets['gender'] != NOT_AVAIL)].sort('age')
@@ -159,10 +159,11 @@ def do_single_search(request_form):
                                  gender_plot=gender_plot_div,
                                  age_plot=age_plot_div,
                                  age_gender_plot=age_gender_plot_div,
-                                 json_results=json.dumps(json_results, indent=True),
+                                 json_results=json_results,
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
                                  nuts_buckets=nuts_buckets,
+                                 country_total=country_total,
                                  available_options=AVAILABLE_OPTIONS
                                  )
 
@@ -320,11 +321,11 @@ def do_double_search(request_form):
                                  # bokeh_script=bokeh_script,
                                  # gender_plot=gender_plot_div,
                                  # age_plot=age_plot_div,
-                                 json_results1=json.dumps(json_results1, indent=True),
-                                 json_results2=json.dumps(json_results2, indent=True),
+                                 json_results1=json_results1,
+                                 json_results2=json_results2,
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
-
+                                 available_options=AVAILABLE_OPTIONS
                                  )
 
 

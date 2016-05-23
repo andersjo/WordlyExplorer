@@ -5,14 +5,13 @@
 {% block content %}
    <script language="javascript">
         var nutsdata = {{ nuts_buckets|safe }};
-        <!--console.log("Look:", nutsdata)-->
 
         function handleLayer(layer) {
 
             if (layer.feature.id.toLowerCase().substring(0,2) == "{{ country_code }}") {
                 var nuts3 = layer.feature.id;
-                console.log("Handling layer", nuts3)
-                console.log(nutsdata[nuts3])
+                <!--console.log("Handling layer", nuts3)-->
+                <!--console.log(nutsdata[nuts3])-->
                 layer.setStyle({
                     fillColor: "red",
                     fillOpacity: nutsdata[nuts3],
@@ -103,17 +102,36 @@
 
 
     <div>
-    You searched for <em>{{ query }}</em>. Found XXX results.
+    Your search for <em>{{ query }}</em> found {{ json_results['response']['numFound'] }} results.
     </div>
 
     <h3>Age and gender</h3>
     <div class="row">
-        <div class="col-md-4">{{ gender_plot | safe }}</div>
-        <div class="col-md-8">{{ age_plot | safe }}</div>
-        <div class="col-md-8">{{ age_gender_plot | safe }}</div>
+        <div class="col-md-4">
+            {{ gender_plot | safe }}
+            The plot show the ratio of identified men and women who use <em>{{ query }}</em>.
+            Counts normalized by total number of records for {{ country_code }}, {{ country_total }}.
+        </div>
+        <div class="col-md-8">
+            {{ age_plot | safe }}
+            Normalized distribution over age range for all records.
+            Information normalized by total number of records for {{ country_code }}, {{ country_total }}.
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            {{ age_gender_plot | safe }}
+            Normalized distribution over age range for men and women.
+            Information normalized by total number of records for {{ country_code }}, {{ country_total }}.
+        </div>
     </div>
 
-    <div id="mapid"></div>
+    <h3>Regional distribution</h3>
+    <div class="row">
+        <div id="mapid">
+            The map shows the percentage of records for each NUTS region that use the term <em>{{ query }}</em>
+        </div>
+    </div>
 
     <pre>
     {{ json_results }}
