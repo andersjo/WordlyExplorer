@@ -83,12 +83,12 @@ PLOTS/INFO:
 - add two-term query results: DONE
 - add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency: DONE
 - How do we best create age-distro subplots for each gender? DONE???
+- include error handling if search term is not found: DONE
 
 ================================================================================================================
 
 TODO:
-- add worked examples
-- include error handling if search term is not found
+- add worked examples on front page: how do we link to a results page?
 - at the end of side-by-side, include links to the individual queries
 - add link to results JSON
 - go live...

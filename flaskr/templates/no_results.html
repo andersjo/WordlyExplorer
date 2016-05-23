@@ -1,0 +1,24 @@
+{% extends "humboldt_layout.html" %}
+
+{% block title %}Search results{% endblock %}
+
+{% block content %}
+
+    <div>
+    {% if search_mode == 'single' %}
+        {% include 'single_search_bar.html' %}
+    {% else %}
+        {% include 'comparison_search_bar.html' %}
+        <br />
+    {% endif %}
+    </div>
+
+
+    <h2>Oops...</h2>
+    <div>
+    We're sorry! Your search for <em>{{ query }}</em> found no results. Maybe try a different word?
+    </div>
+
+
+{% endblock %}
+

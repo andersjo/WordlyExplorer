@@ -103,6 +103,9 @@ def do_single_search(request_form):
                                        language_code=language_var,
                                        country_code=country_var)
 
+    if json_results['response']['numFound'] == 0:
+        return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS, search_mode='single')
+
     total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
 
     gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
@@ -270,6 +273,12 @@ def do_double_search(request_form):
                                         language_code=language_var,
                                         country_code=country_var)
 
+    if json_results1['response']['numFound'] == 0:
+        return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS, search_mode='double')
+    elif json_results2['response']['numFound'] == 0:
+        return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS, search_mode='double')
+
+
     total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
 
     gender_buckets1 = buckets_to_series(json_results1['facets']['genders']['buckets'])
@@ -315,7 +324,7 @@ def do_double_search(request_form):
                                  json_results2=json.dumps(json_results2, indent=True),
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
-                                 available_options=AVAILABLE_OPTIONS
+
                                  )
 
 
