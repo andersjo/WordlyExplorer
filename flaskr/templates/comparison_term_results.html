@@ -97,12 +97,12 @@
 
     <!--{{ bokeh_script | safe }}-->
 
-    <div>
+    <div class="row">
     {% include 'comparison_search_bar.html' %}
     </div>
 
 
-    <div>
+    <div class="row">
     Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ json_results1['response']['numFound'] }}  and {{ json_results2.response.numFound }} results.
     </div>
 
@@ -117,12 +117,12 @@
 
     <p><br/></p>
 
-    <div>
+    <div class="row">
         {{ gender_comparison | safe }}
         {{ gender_stats_msg | safe }}
     </div>
 
-    <div>
+    <div class="row">
         {{ age_comparison | safe }}
         {{ age_stats_msg | safe }}
     </div>

@@ -4,7 +4,7 @@
 
 {% block content %}
 
-    <div>
+    <div class="row">
     {% if search_mode == 'single' %}
         {% include 'single_search_bar.html' %}
     {% else %}
@@ -15,7 +15,7 @@
 
 
     <h2>Oops...</h2>
-    <div>
+    <div class="row">
     We're sorry! Your search for <em>{{ query }}</em> found no results. Maybe try a different word?
     </div>
 
