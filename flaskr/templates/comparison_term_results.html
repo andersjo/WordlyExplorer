@@ -1,0 +1,124 @@
+{% extends "humboldt_layout.html" %}
+
+{% block title %}Search results{% endblock %}
+
+{% block content %}
+   <script language="javascript">
+        var nutsdata = {{ nuts_buckets|safe }};
+        <!--console.log("Look:", nutsdata)-->
+
+        function handleLayer(layer) {
+
+            if (layer.feature.id.toLowerCase().substring(0,2) == "{{ country_code }}") {
+                var nuts3 = layer.feature.id;
+                console.log("Handling layer", nuts3)
+                console.log(nutsdata[nuts3])
+                layer.setStyle({
+                    fillColor: "red",
+                    fillOpacity: nutsdata[nuts3],
+                    color: 'red',
+                    weight: 1,
+                    opacity: 1
+                });
+
+                <!--if (Math.random() > 0.5) {-->
+                    <!--layer.setStyle({-->
+                        <!--fillColor: "green",-->
+                        <!--fillOpacity: 0.5,-->
+                        <!--color: 'red',-->
+                        <!--weight: 1,-->
+                        <!--opacity: 0.5-->
+                    <!--});-->
+
+                <!--} else {-->
+                    <!--layer.setStyle({-->
+                        <!--fillColor: "yellow",-->
+                        <!--fillOpacity: 0.5,-->
+                        <!--color: '#555',-->
+                        <!--weight: 1,-->
+                        <!--opacity: 0.5-->
+                    <!--});-->
+                <!--}-->
+            } else{
+                layer.setStyle({
+                    weight: 0,
+                    opacity: 0.0
+                });
+
+            }
+
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var mymap = L.map('mapid').setView({{ map_views[country_code][0] }}, {{ map_views[country_code][1] }});
+
+            L.tileLayer('https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                maxZoom: 7,
+                id: 'humboldt',
+                accessToken: 'pk.eyJ1IjoiYW5kZXJzam8iLCJhIjoiY2lvOTBnajl6MDAwMnY4bTEwejFrODUwcSJ9.AwQTCWqByxT2OVta7NT68w'
+            }).addTo(mymap);
+
+            // Augment leaflet with TopoJSON support
+            // See THIS tutorial: http://blog.webkid.io/maps-with-leaflet-and-topojson/
+
+            L.TopoJSON = L.GeoJSON.extend({
+                addData: function (jsonData) {
+                    console.log("Adding some data that I got in JSON");
+                    if (jsonData.type === "Topology") {
+                        // TODO: add restriction to selected country NUTS only
+                        for (key in jsonData.objects) {
+                            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+                            L.GeoJSON.prototype.addData.call(this, geojson);
+                        }
+                    }
+                    else {
+                        L.GeoJSON.prototype.addData.call(this, jsonData);
+                    }
+                }
+            });
+
+
+            // Add the data file itself
+            var topoLayer = new L.TopoJSON();
+
+            function addTopoData(topoData) {
+                topoLayer.addData(topoData);
+                topoLayer.addTo(mymap);
+                topoLayer.eachLayer(handleLayer)
+            }
+
+            $.getJSON("{{ url_for('static', filename='geo/nuts3.json') }}")
+                    .done(addTopoData);
+
+        }, false);
+    </script>
+
+    <!--{{ bokeh_script | safe }}-->
+
+    <!--<div>-->
+    <!--{% include 'comparison_search_bar.html' %}-->
+    <!--</div>-->
+
+
+    <!--<div>-->
+    <!--You searched for <em>{{ query1 }}</em> and <em>{{ query2 }}</em>. Getting you some results.-->
+    <!--</div>-->
+
+    <!--<h3>Age and gender</h3>-->
+    <!--<div class="row">-->
+        <!--<div class="col-md-4">{{ gender_plot | safe }}</div>-->
+        <!--<div class="col-md-8">{{ age_plot | safe }}</div>-->
+        <!--<div class="col-md-8">{{ age_gender_plot | safe }}</div>-->
+    <!--</div>-->
+
+    <!--<div id="mapid"></div>-->
+
+    <pre>
+    {{ json_results1 }}
+    </pre>
+
+
+{% endblock %}
+
