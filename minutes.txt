@@ -54,7 +54,7 @@ ACTION:
 
 How do we distinguish the countries? Rather than using location info, define on import with separate flag? DONE!
 Add field for language: DONE!
-Add another script to reset the DB.
+Add another script to reset the DB: DONE
 
 ACTION:
 - get query from the website to the DB and display the results: DONE
@@ -66,7 +66,7 @@ ACTION:
 - include maps into results page: DONE
 - make bobble heads smaller and switch order: DONE
 - switch to NUTS-3: DONE
-- add bibtex ref and other citation stuff
+- add bibtex ref and other citation stuff: DONE
 - intro page (link paper, explanation of data, and overview plus worked examples [with links]): DONE
 
 PLOTS/INFO:

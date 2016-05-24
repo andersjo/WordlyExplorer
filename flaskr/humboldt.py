@@ -4,7 +4,7 @@ from _bisect import bisect
 import flask
 import pandas as pd
 import requests
-from bokeh.charts import Bar
+from bokeh.charts import Bar, Line
 from bokeh.embed import components
 from config import AVAILABLE_OPTIONS
 from config import MAP_VIEWS
@@ -296,9 +296,7 @@ def do_double_search(request_form):
     if gender_stats_level == len(P_LEVELS):
         gender_stats_msg = "Gender difference is <em>not</em> statistically significant (Chi-squared contingency test with p > %s)" % (P_LEVELS[-1])
     else:
-        gender_stats_msg = "Gender difference is statistically significant at p < %s (Chi-squared contingency test)" % (P_LEVELS[gender_stats_level])
-
-    print((gender_buckets1/gender_buckets1.sum()) - (gender_buckets2/gender_buckets2.sum()))
+        gender_stats_msg = "Gender difference is statistically significant at p < %s (p = %s with Chi-squared contingency test)" % (P_LEVELS[gender_stats_level], pvalue)
 
     age_buckets1 = buckets_to_series(json_results1['facets']['ages']['buckets'])
     age_buckets2 = buckets_to_series(json_results2['facets']['ages']['buckets'])
@@ -310,7 +308,7 @@ def do_double_search(request_form):
     if age_stats_level == len(P_LEVELS):
         age_stats_msg = "Age difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
     else:
-        age_stats_msg = "Age difference is <em>statistically significant</em> at p < %s" % (P_LEVELS[age_stats_level])
+        age_stats_msg = "Age difference is <em>statistically significant</em> at p < %s (p = %s)" % (P_LEVELS[age_stats_level], pvalue)
 
     J = pd.DataFrame(gender_comparison.unstack())
     L = pd.DataFrame(data={'variable':[J.index.levels[1][x] for x in J.index.labels[1]], 'gender':[J.index.levels[0][x] for x in J.index.labels[0]], 'count':(J/country_total).values.T[0].tolist()})
@@ -327,6 +325,15 @@ def do_double_search(request_form):
                           legend='top_right',
                           color=['blue', 'green'],
                           webgl=True)
+
+
+    nuts_buckets1 = buckets_to_series(json_results1['facets']['nuts_3_regions']['buckets'])
+    nuts_buckets2 = buckets_to_series(json_results2['facets']['nuts_3_regions']['buckets'])
+    nuts_buckets1 = nuts_buckets1[[val for val in nuts_buckets1.index if val.lower().startswith(country_var)]]
+    nuts_buckets2 = nuts_buckets2[[val for val in nuts_buckets2.index if val.lower().startswith(country_var)]]
+    nuts_totals = TOTALS.groupby('nuts_3').sum()
+
+    print(nuts_buckets1, nuts_buckets2, nuts_totals[[nutsindex.lower().startswith(country_var) for nutsindex in nuts_totals.index]])
 
     bokeh_script, (gender_plot_div) = components((gender_plot))
 
