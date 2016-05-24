@@ -364,10 +364,12 @@ def do_double_search(request_form):
     outliers2 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2.any() == True]))
     outlier_description = []
     if outliers1:
-        outlier_description.append('<em>%s</em> is more prevalent in regions %s' % (search_term1, outliers1))
+        outlier_description.append('<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term1, search_term2outliers1))
     if outliers2:
-        outlier_description.append('<em>%s</em> is more prevalent in regions %s' % (search_term2, outliers2))
-    outlier_description = ', '.join(outlier_description)
+        if outlier_description:
+            outlier_description.append(', while ')
+        outlier_description.append('<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term2, search_term1, outliers2))
+    outlier_description = ''.join(outlier_description)
 
     bokeh_script, (gender_plot_div) = components((gender_plot))
 
