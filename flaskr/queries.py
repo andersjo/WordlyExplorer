@@ -55,7 +55,7 @@ def query_totals():
         resp.raise_for_status()
     return resp.json()
 
-def simple_query_totals():
+def simple_query_totals(user_query=None):
     compound_field = "nuts_3_and_gender_and_age"
 
     json_query = {
@@ -66,7 +66,12 @@ def simple_query_totals():
         }
     }
 
+    if user_query:
+        json_query.update(user_query)
+
+
     resp = perform_query(json_query)
+    print("Query took ", resp['responseHeader']['QTime'])
     count_dict_list = resp["facets"][compound_field]["buckets"]
 
     field_parts = compound_field.split("_and_")
@@ -74,7 +79,7 @@ def simple_query_totals():
     rows = []
     for count_dict in count_dict_list:
         value_parts = count_dict["val"].split(":")
-        row = {"count": count_dict["count"]}
+        row = {"num_docs": count_dict["count"]}
         for field, value in zip(field_parts, value_parts):
             row[field] = value
         rows.append(row)
@@ -82,7 +87,7 @@ def simple_query_totals():
     D = pd.DataFrame(rows)
 
     # Sanity check. Verify that the totals match the total number of reviews in the DB.
-    assert D['count'].sum() == resp['response']['numFound'], \
+    assert D['num_docs'].sum() == resp['response']['numFound'], \
         "Sum of counts must match total number of reviews in DB"
 
     # Convert age to a integer field
@@ -101,4 +106,4 @@ if __name__ == '__main__':
     # print(totals)
     # fields
     # age   count gender nuts_3 country_code
-    print(totals[(totals['gender'] == 'M') & (totals['country_code'] == 'uk')]['count'].sum())
+    print(totals[(totals['gender'] == 'M') & (totals['country_code'] == 'uk')]['num_docs'].sum())
