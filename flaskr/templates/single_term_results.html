@@ -128,8 +128,14 @@
 
     <h3>Regional distribution</h3>
     <div class="row">
-        <div id="mapid">
-            The map shows the percentage of records for each NUTS region that use the term <em>{{ query }}</em>
+        <div class="col-md-8">
+            The map shows the percentage of records for each NUTS region that use the term <em>{{ query }}</em>.
+            <div id="mapid"></div>
+            {% if outliers != '' %}
+            The term is used more frequently than average in following regions:
+            {{ outliers }}
+            (the ratio of term in the vocabulary of these regions is larger than the average ratio across regions).
+            {% endif %}
         </div>
     </div>
 

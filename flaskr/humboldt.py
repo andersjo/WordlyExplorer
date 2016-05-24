@@ -124,6 +124,9 @@ def do_single_search(request_form):
     nuts_buckets_norm = nuts_buckets[[val for val in nuts_buckets.index if val.lower().startswith(country_var)]]
     nuts_buckets_norm /= nuts_buckets_norm.sum()
     nuts_buckets = nuts_buckets_norm.to_json()#nuts_totals.ix[nuts_buckets.index, :]['count'].fillna(1).values).to_json()
+    # is a term more prevalent in on region, i.e., more frequent than the median?
+    special_regions = nuts_buckets_norm > nuts_buckets_norm.median()
+    outliers = ', '.join(sorted([x for x in special_regions.index if special_regions.ix[x].any() == True]))
 
     # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
@@ -166,6 +169,7 @@ def do_single_search(request_form):
                                  map_views=MAP_VIEWS,
                                  nuts_buckets=nuts_buckets,
                                  country_total=country_total,
+                                 outliers=outliers,
                                  available_options=AVAILABLE_OPTIONS
                                  )
 
