@@ -1,39 +1,5 @@
 @import url();
 
-/*html, body, #container *//*, and all other map parent selectors*//* {
-  height: 100%;
-  overflow: hidden;
-  width: 100%;
-}
-
-#map {
-  width: auto;
-  height: 100%;
-}*/
-
-/*
-body {
-    background-image: url("../img/antique-world-map-1153206.jpg");
-	background-repeat: repeat-y;
-    background-attachment: fixed;
-    background-position: center top;
-   }
-
-.starter-template{
-	background-color:rgba(232,225,185,0.6);
-}
-
-
-
-.humboldt_main {
-	background-color:rgba(232,225,185,0.6);
-	margin: auto;
-	text-align: left;
-    padding: 40px 15px;
-}
-*/
-
-
 .portrait {
 	float: clear;
 	min-height: 200px;
@@ -48,6 +14,16 @@ body {
 	padding-right: 0.3em;	
 }
 
+
+.dataframe tr th {
+    padding: 0.1em;
+    text-align: center;
+}
+
+.dataframe tr td {
+    padding: 0.1em;
+    text-align: right;
+}
 
 
 #mapid {

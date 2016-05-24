@@ -120,8 +120,10 @@ def do_single_search(request_form):
 
     # TODO: get total count per region and normalize by that?
     nuts_buckets = buckets_to_series(json_results['facets']['nuts_3_regions']['buckets'])
-    nuts_totals = TOTALS.groupby('nuts_3').sum()
-    nuts_buckets = (nuts_buckets / nuts_totals.ix[nuts_buckets.index, :]['count'].fillna(1).values).to_json()
+    # nuts_totals = TOTALS.groupby('nuts_3').sum()
+    nuts_buckets_norm = nuts_buckets[[val for val in nuts_buckets.index if val.lower().startswith(country_var)]]
+    nuts_buckets_norm /= nuts_buckets_norm.sum()
+    nuts_buckets = nuts_buckets_norm.to_json()#nuts_totals.ix[nuts_buckets.index, :]['count'].fillna(1).values).to_json()
 
     # TODO move plotting to its own function
     gender_plot = Bar(gender_buckets,
@@ -280,27 +282,27 @@ def do_double_search(request_form):
         return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS, search_mode='double')
 
 
-    total_found = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
+    country_total = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
 
     gender_buckets1 = buckets_to_series(json_results1['facets']['genders']['buckets'])
     gender_buckets2 = buckets_to_series(json_results2['facets']['genders']['buckets'])
     gender_buckets1 = gender_buckets1[[val for val in gender_buckets1.index if val != NOT_AVAIL]]
     gender_buckets2 = gender_buckets2[[val for val in gender_buckets2.index if val != NOT_AVAIL]]
 
-    gender_comparison = pd.DataFrame(data={search_term1:gender_buckets1.values, search_term2:gender_buckets2.values}, index=gender_buckets1.index)
+    gender_comparison = pd.DataFrame(data={search_term1:gender_buckets1.values, search_term2:gender_buckets2.values}, index=gender_buckets1.index).T
     chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
     gender_stats_level = bisect(P_LEVELS, pvalue)
 
     if gender_stats_level == len(P_LEVELS):
-        gender_stats_msg = "Gender difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
+        gender_stats_msg = "Gender difference is <em>not</em> statistically significant (Chi-squared contingency test with p > %s)" % (P_LEVELS[-1])
     else:
-        gender_stats_msg = "Gender difference is statistically significant at p < %s" % (P_LEVELS[gender_stats_level])
+        gender_stats_msg = "Gender difference is statistically significant at p < %s (Chi-squared contingency test)" % (P_LEVELS[gender_stats_level])
 
+    print((gender_buckets1/gender_buckets1.sum()) - (gender_buckets2/gender_buckets2.sum()))
 
     age_buckets1 = buckets_to_series(json_results1['facets']['ages']['buckets'])
     age_buckets2 = buckets_to_series(json_results2['facets']['ages']['buckets'])
 
-    print(age_buckets1, age_buckets2)
     age_comparison = pd.DataFrame(data={search_term1:age_buckets1.values, search_term2:age_buckets2.values}, index=age_buckets1.index)
     r, pvalue = spearmanr(age_comparison)
     age_stats_level = bisect(P_LEVELS, pvalue)
@@ -308,23 +310,42 @@ def do_double_search(request_form):
     if age_stats_level == len(P_LEVELS):
         age_stats_msg = "Age difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
     else:
-        age_stats_msg = "Age difference is statistically significant at p < %s" % (P_LEVELS[age_stats_level])
+        age_stats_msg = "Age difference is <em>statistically significant</em> at p < %s" % (P_LEVELS[age_stats_level])
+
+    J = pd.DataFrame(gender_comparison.unstack())
+    L = pd.DataFrame(data={'variable':[J.index.levels[1][x] for x in J.index.labels[1]], 'gender':[J.index.levels[0][x] for x in J.index.labels[0]], 'count':(J/country_total).values.T[0].tolist()})
+
+    gender_plot = Bar(L,
+                          group='gender',
+                          label='variable',
+                          values='count',
+                          title="Distribution by gender",
+                          logo=None,
+                          toolbar_location="below",
+                          width=600,
+                          height=400,
+                          legend='top_right',
+                          color=['blue', 'green'],
+                          webgl=True)
+
+    bokeh_script, (gender_plot_div) = components((gender_plot))
 
 
     return flask.render_template('comparison_term_results.html',
                                  query1=request_form["doubleTermQuery1"],
                                  query2=request_form["doubleTermQuery2"],
-                                 gender_comparison=gender_comparison.to_html(),
+                                 gender_comparison=gender_comparison.to_html(justify='right'),
                                  gender_stats_msg=gender_stats_msg,
-                                 age_comparison=age_comparison.to_html(),
+                                 age_comparison=age_comparison.T.to_html(justify='right'),
                                  age_stats_msg=age_stats_msg,
-                                 # bokeh_script=bokeh_script,
-                                 # gender_plot=gender_plot_div,
+                                 bokeh_script=bokeh_script,
+                                 gender_plot=gender_plot_div,
                                  # age_plot=age_plot_div,
                                  json_results1=json_results1,
                                  json_results2=json_results2,
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
+                                 country_total=country_total,
                                  available_options=AVAILABLE_OPTIONS
                                  )
 
