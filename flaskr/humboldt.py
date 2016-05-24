@@ -356,15 +356,16 @@ def do_double_search(request_form):
             if region in nuts_buckets2.index:
                 nutsdiff.ix[region] = -nuts_buckets2.ix[region]
     # compute which term sticks out
-    nutsdiff['G2'] = abs(nutsdiff[0]) > abs(nutsdiff[0].mean())
+    nutsdiff['G2'] = abs(nutsdiff[0]) > nutsdiff[0].abs().mean()
 
     outliers = sorted([x for x in regions if nutsdiff['G2'].ix[x].any() == True])
     is_it_term2 = nutsdiff[0].ix[outliers] < 0
-    outliers1 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2.any() == False]))
-    outliers2 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2.any() == True]))
+    outliers1 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2[x] == False]))
+    outliers2 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2[x] == True]))
+    print(nutsdiff, is_it_term2)
     outlier_description = []
     if outliers1:
-        outlier_description.append('<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term1, search_term2outliers1))
+        outlier_description.append('<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term1, search_term2, outliers1))
     if outliers2:
         if outlier_description:
             outlier_description.append(', while ')
