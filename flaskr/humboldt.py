@@ -15,6 +15,7 @@ from config import TOTALS
 from config import P_LEVELS
 from flask import request
 from scipy.stats import chi2_contingency, spearmanr
+from numpy import sign, arange
 
 # Create the application.
 HUMBOLDT_APP = flask.Flask(__name__)
@@ -294,6 +295,7 @@ def do_double_search(request_form):
     gender_buckets2 = gender_buckets2[[val for val in gender_buckets2.index if val != NOT_AVAIL]]
 
     gender_comparison = pd.DataFrame(data={search_term1:gender_buckets1.values, search_term2:gender_buckets2.values}, index=gender_buckets1.index).T
+    del gender_comparison.index.name
     chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
     gender_stats_level = bisect(P_LEVELS, pvalue)
 
@@ -331,13 +333,41 @@ def do_double_search(request_form):
                           webgl=True)
 
 
+    nuts_totals = TOTALS.groupby('nuts_3').sum()
+    regions = [x for x in nuts_totals.index if x.lower().startswith(country_var)]
+    country_nuts_total = float(nuts_totals.ix[regions].sum())
+
+    # get the info by the bucket
     nuts_buckets1 = buckets_to_series(json_results1['facets']['nuts_3_regions']['buckets'])
     nuts_buckets2 = buckets_to_series(json_results2['facets']['nuts_3_regions']['buckets'])
-    nuts_buckets1 = nuts_buckets1[[val for val in nuts_buckets1.index if val.lower().startswith(country_var)]]
-    nuts_buckets2 = nuts_buckets2[[val for val in nuts_buckets2.index if val.lower().startswith(country_var)]]
-    nuts_totals = TOTALS.groupby('nuts_3').sum()
+    nuts_buckets1 = nuts_buckets1[[val for val in nuts_buckets1.index if val.lower().startswith(country_var)]]/ country_nuts_total
+    nuts_buckets2 = nuts_buckets2[[val for val in nuts_buckets2.index if val.lower().startswith(country_var)]]/ country_nuts_total
 
-    print(nuts_buckets1, nuts_buckets2, nuts_totals[[nutsindex.lower().startswith(country_var) for nutsindex in nuts_totals.index]])
+    # compute the differences between the two terms
+    # TODO: there is probably a better way
+    nutsdiff = pd.DataFrame(0, index=regions, columns=arange(1))
+    for region in regions:
+        if region in nuts_buckets1.index:
+            if region in nuts_buckets2.index:
+                nutsdiff.ix[region] = nuts_buckets1.ix[region] - nuts_buckets2.ix[region]
+            else:
+                nutsdiff.ix[region] = nuts_buckets1.ix[region]
+        else:
+            if region in nuts_buckets2.index:
+                nutsdiff.ix[region] = -nuts_buckets2.ix[region]
+    # compute which term sticks out
+    nutsdiff['G2'] = abs(nutsdiff[0]) > abs(nutsdiff[0].mean())
+
+    outliers = sorted([x for x in regions if nutsdiff['G2'].ix[x].any() == True])
+    is_it_term2 = nutsdiff[0].ix[outliers] < 0
+    outliers1 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2.any() == False]))
+    outliers2 = ', '.join(sorted([x for x in is_it_term2.index if is_it_term2.any() == True]))
+    outlier_description = []
+    if outliers1:
+        outlier_description.append('<em>%s</em> is more prevalent in regions %s' % (search_term1, outliers1))
+    if outliers2:
+        outlier_description.append('<em>%s</em> is more prevalent in regions %s' % (search_term2, outliers2))
+    outlier_description = ', '.join(outlier_description)
 
     bokeh_script, (gender_plot_div) = components((gender_plot))
 
@@ -357,6 +387,7 @@ def do_double_search(request_form):
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
                                  country_total=country_total,
+                                 outlier_description=outlier_description,
                                  available_options=AVAILABLE_OPTIONS
                                  )
 
