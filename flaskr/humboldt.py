@@ -1,7 +1,8 @@
+from _bisect import bisect
+
 import flask
 import pandas as pd
 import requests
-from _bisect import bisect
 from bokeh.charts import Bar, Line
 from bokeh.embed import components
 from bokeh.models import Range1d
@@ -153,6 +154,7 @@ def do_single_search(request_form):
     # TODO move plotting to its own function
     gender_plot = Bar(gender_query_adjusted,
                       title="Gender distribution",
+                      ylabel="percentage",
                       logo=None,
                       toolbar_location="below",
                       width=300,
@@ -162,8 +164,9 @@ def do_single_search(request_form):
     age_range = list(map(str, range(MIN_AGE, MAX_AGE)))
     age_plot = Line(compare_age_df,
                     title="Age distribution",
-                     x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
+                    x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
                     xlabel='age',
+                    ylabel="percentage",
                     logo=None,
                     toolbar_location="below",
                     width=800,
@@ -175,6 +178,7 @@ def do_single_search(request_form):
     age_gender_plot_M = Line(compare_male_df,
                              title="Age distribution for men",
                              xlabel='age',
+                             ylabel="percentage",
                              x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
                              logo=None,
                              toolbar_location="below",
@@ -338,7 +342,6 @@ def do_double_search(request_form):
                     height=400,
                     webgl=False)
 
-
     ########
     # NUTS #
     ########
@@ -386,7 +389,6 @@ def do_double_search(request_form):
                                  outlier_description=outlier_description,
                                  available_options=AVAILABLE_OPTIONS
                                  )
-
 
 
 def compound_bucket_to_series(count_dict_list, compound_field):

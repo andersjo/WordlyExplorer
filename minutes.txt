@@ -82,9 +82,10 @@ PLOTS/INFO:
 - add combined fields: agegroup+gender, region+gender: DONE
 - add two-term query results: DONE
 - add basic stats and significance tests into output: contingency table, scipy.stats.chi2_contingency: DONE
-- How do we best create age-distro subplots for each gender? DONE???
+- How do we best create age-distro subplots for each gender? DONE
 - include error handling if search term is not found: DONE
 - add region names instead of NUTS code in list of outliers: DONE
+- go live...: DONE!
 
 ==============================================================================================================
 
@@ -92,10 +93,6 @@ TODO:
 - add worked examples on front page: how do we link to a results page?
 - age plots have the wrong x-label range!
 - at the end of side-by-side, include links to the individual queries
-- go live...
-
-
-- What are we normalizing by? Currently: all reviews for a country. Is that what we want: makes NUTS region coloring barely visible.
 
 NICE TO HAVE AT SOME POINT:
 - add link to results JSON
