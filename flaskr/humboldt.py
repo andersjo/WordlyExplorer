@@ -174,6 +174,7 @@ def do_single_search(request_form):
                     legend='top_right',
                     color=['silver', 'red'],
                     webgl=False)
+    print(compare_age_df)
 
     age_gender_plot_M = Line(compare_male_df,
                              title="Age distribution for men",
@@ -391,88 +392,88 @@ def do_double_search(request_form):
                                  )
 
 
-def compound_bucket_to_series(count_dict_list, compound_field):
-    """
-    convert compound fields to pd.DataFrame
-    :param count_dict_list:
-    :param compound_field:
-    :return:
-    """
-    field_parts = compound_field.split("_and_")
-
-    rows = []
-    for count_dict in count_dict_list:
-        value_parts = count_dict["val"].split(":")
-        row = {"count": count_dict["count"]}
-        for field, value in zip(field_parts, value_parts):
-            if field == 'age':
-                try:
-                    row[field] = int(value)
-                except ValueError:
-                    row[field] = -1
-            else:
-                row[field] = value
-
-        rows.append(row)
-
-    return pd.DataFrame(rows)
-
-
-def buckets_to_series(bucket_dict):
-    """
-    Converts a a list of buckets to a pd.Series.
-    Buckets are given as a list of JSON dicts, following the Solr buckets format.
-    """
-    return pd.DataFrame(bucket_dict).set_index('val')['count']
-
-
-def single_term_to_JSON(search_term, country_code, language_code):
-    """
-    search for a single term in a country and language
-    """
-    json_query = {
-        "query": "body_text_ws:{}".format(search_term),
-        "facet": {
-            "genders": {
-                "type": "terms",
-                "field": "gender_s",
-                "facet": {
-                    "mean_age": "min(age_i)"
-                }
-            },
-            "ages": {
-                "start": MIN_AGE,
-                "end": MAX_AGE,
-                "type": "range",
-                "field": "age_i",
-                "gap": 1
-
-            },
-            "nuts_3_regions": {
-                "type": "terms",
-                "field": "nuts_3_s",
-                "limit": -1
-            },
-            "gender_and_age": {
-                "type": "terms",
-                "field": "gender_and_age_s",
-                "limit": -1
-            },
-            "mean_age": "avg(age_i)",
-            "percentiles_age": "percentile(age_i, 25, 50, 75)"
-        },
-        "filter": ["country_s:{}".format(country_code),
-                   "langid_s:{}".format(language_code)
-                   ],
-
-        "limit": 2
-    }
-
-    resp = requests.post(SOLR_QUERY_URL, json=json_query)
-    if not resp.ok:
-        print("Request failed: " + resp.text)
-        resp.raise_for_status()
-    return resp.json()
+# def compound_bucket_to_series(count_dict_list, compound_field):
+#     """
+#     convert compound fields to pd.DataFrame
+#     :param count_dict_list:
+#     :param compound_field:
+#     :return:
+#     """
+#     field_parts = compound_field.split("_and_")
+#
+#     rows = []
+#     for count_dict in count_dict_list:
+#         value_parts = count_dict["val"].split(":")
+#         row = {"count": count_dict["count"]}
+#         for field, value in zip(field_parts, value_parts):
+#             if field == 'age':
+#                 try:
+#                     row[field] = int(value)
+#                 except ValueError:
+#                     row[field] = -1
+#             else:
+#                 row[field] = value
+#
+#         rows.append(row)
+#
+#     return pd.DataFrame(rows)
+#
+#
+# def buckets_to_series(bucket_dict):
+#     """
+#     Converts a a list of buckets to a pd.Series.
+#     Buckets are given as a list of JSON dicts, following the Solr buckets format.
+#     """
+#     return pd.DataFrame(bucket_dict).set_index('val')['count']
+#
+#
+# def single_term_to_JSON(search_term, country_code, language_code):
+#     """
+#     search for a single term in a country and language
+#     """
+#     json_query = {
+#         "query": "body_text_ws:{}".format(search_term),
+#         "facet": {
+#             "genders": {
+#                 "type": "terms",
+#                 "field": "gender_s",
+#                 "facet": {
+#                     "mean_age": "min(age_i)"
+#                 }
+#             },
+#             "ages": {
+#                 "start": MIN_AGE,
+#                 "end": MAX_AGE,
+#                 "type": "range",
+#                 "field": "age_i",
+#                 "gap": 1
+#
+#             },
+#             "nuts_3_regions": {
+#                 "type": "terms",
+#                 "field": "nuts_3_s",
+#                 "limit": -1
+#             },
+#             "gender_and_age": {
+#                 "type": "terms",
+#                 "field": "gender_and_age_s",
+#                 "limit": -1
+#             },
+#             "mean_age": "avg(age_i)",
+#             "percentiles_age": "percentile(age_i, 25, 50, 75)"
+#         },
+#         "filter": ["country_s:{}".format(country_code),
+#                    "langid_s:{}".format(language_code)
+#                    ],
+#
+#         "limit": 2
+#     }
+#
+#     resp = requests.post(SOLR_QUERY_URL, json=json_query)
+#     if not resp.ok:
+#         print("Request failed: " + resp.text)
+#         resp.raise_for_status()
+#     return resp.json()
 
 
 if __name__ == '__main__':
