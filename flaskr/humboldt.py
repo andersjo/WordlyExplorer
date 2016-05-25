@@ -1,32 +1,27 @@
 import flask
 import pandas as pd
 import requests
+from _bisect import bisect
 from bokeh.charts import Bar, Line
-from bokeh.models.ranges import DataRange1d
 from bokeh.embed import components
+from bokeh.models import Range1d
 from config import AVAILABLE_OPTIONS
 from config import MAP_VIEWS
 from config import MIN_AGE, MAX_AGE
 from config import NUTS_NAMES
 from config import P_LEVELS
-from config import SOLR_QUERY_URL
 from config import ROLLING_MEAN_FRAME
-from _bisect import bisect
-from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender
+from config import SOLR_QUERY_URL
 from flask import request
 from numpy import arange
+from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender
 from scipy.stats import chi2_contingency, spearmanr
 
 # Create the application.
-HUMBOLDT_APP = flask.Flask(__name__)
+app = flask.Flask(__name__)
 
 
-# TODO: add a pandas DataFrame with totals
-
-# TODO: side-by-side comparison
-
-
-@HUMBOLDT_APP.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def welcome():
     """
     landing page with welcome message
@@ -41,7 +36,7 @@ def welcome():
                                      )
 
 
-@HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def search():
     """
     Displays the search page accessible at '/search'
@@ -54,7 +49,8 @@ def search():
 
     else:
         totals = simple_query_totals()
-        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for country_info in AVAILABLE_OPTIONS}
+        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
+                          country_info in AVAILABLE_OPTIONS}
 
         return flask.render_template('search.html',
                                      map_views=MAP_VIEWS,
@@ -62,7 +58,7 @@ def search():
                                      totals=country_totals)
 
 
-@HUMBOLDT_APP.route('/about')
+@app.route('/about')
 def about():
     """
     the page about us
@@ -71,7 +67,7 @@ def about():
     return flask.render_template('about.html')
 
 
-@HUMBOLDT_APP.route('/contact')
+@app.route('/contact')
 def contact():
     """
     the contact info
@@ -90,7 +86,7 @@ def do_single_search(request_form):
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
     try:
         specific_query = simple_query_totals({"query": "body_text_ws:%s" % search_terms,
-                                          "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+                                              "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
     except KeyError:
         return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS,
                                      search_mode='single')
@@ -129,7 +125,7 @@ def do_single_search(request_form):
     age_specific_query = sort_and_filter_age(age_specific_query)
     age_specific_query_norm = age_specific_query / age_specific_query.sum()
     compare_age_df = pd.DataFrame({'_base_': age_totals_norm,
-                           '%s'%search_terms: pd.rolling_mean(age_specific_query_norm, ROLLING_MEAN_FRAME)})
+                                   '%s' % search_terms: pd.rolling_mean(age_specific_query_norm, ROLLING_MEAN_FRAME)})
 
     ##################
     # AGE AND GENDER #
@@ -138,9 +134,11 @@ def do_single_search(request_form):
     age_and_gender_specific_query = prepare_age_and_gender(specific_query)
 
     compare_male_df = pd.DataFrame({'_base_': age_and_gender_totals['M'],
-                                '%s'%search_terms: pd.rolling_mean(age_and_gender_specific_query['M'], ROLLING_MEAN_FRAME)})
+                                    '%s' % search_terms: pd.rolling_mean(age_and_gender_specific_query['M'],
+                                                                         ROLLING_MEAN_FRAME)})
     compare_female_df = pd.DataFrame({'_base_': age_and_gender_totals['F'],
-                                '%s'%search_terms: pd.rolling_mean(age_and_gender_specific_query['F'], ROLLING_MEAN_FRAME)})
+                                      '%s' % search_terms: pd.rolling_mean(age_and_gender_specific_query['F'],
+                                                                           ROLLING_MEAN_FRAME)})
 
     ########
     # NUTS #
@@ -149,7 +147,8 @@ def do_single_search(request_form):
     nuts_total = nuts_query.sum()
     nuts_query_norm = nuts_query / nuts_total
     special_regions = nuts_query_norm > nuts_query_norm.median()
-    outliers = ', '.join(sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in special_regions.index if special_regions.ix[x].any() == True]))
+    outliers = ', '.join(
+        sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in special_regions.index if special_regions.ix[x].any() == True]))
 
     # TODO move plotting to its own function
     gender_plot = Bar(gender_query_adjusted,
@@ -157,47 +156,53 @@ def do_single_search(request_form):
                       logo=None,
                       toolbar_location="below",
                       width=300,
-                      height=400, webgl=True)
+                      height=400,
+                      webgl=False)
 
     age_range = list(map(str, range(MIN_AGE, MAX_AGE)))
     age_plot = Line(compare_age_df,
-                   title="Age distribution",
+                    title="Age distribution",
+                     x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
                     xlabel='age',
-                   logo=None,
-                   toolbar_location="below",
-                   width=800,
+                    logo=None,
+                    toolbar_location="below",
+                    width=800,
+                    height=400,
                     legend='top_right',
                     color=['silver', 'red'],
-                   height=400, webgl=True)
+                    webgl=False)
 
     age_gender_plot_M = Line(compare_male_df,
-                   title="Age distribution for men",
-                    xlabel='age',
-                    x_range=DataRange1d(start=MIN_AGE, end=MAX_AGE),
-                   logo=None,
-                   toolbar_location="below",
-                   width=600,
-                    legend='top_right',
-                    color=['silver', 'green'],
-                   height=400, webgl=True)
+                             title="Age distribution for men",
+                             xlabel='age',
+                             x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
+                             logo=None,
+                             toolbar_location="below",
+                             width=600,
+                             height=400,
+                             legend='top_right',
+                             color=['silver', 'green'],
+                             webgl=False)
     age_gender_plot_F = Line(compare_female_df,
-                   title="Age distribution for women",
-                    xlabel='age',
-                    x_range=DataRange1d(start=MIN_AGE, end=MAX_AGE),
-                   logo=None,
-                   toolbar_location="below",
-                   width=600,
-                    legend='top_right',
-                    color=['silver', 'blue'],
-                   height=400, webgl=True)
+                             title="Age distribution for women",
+                             xlabel='age',
+                             x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
+                             logo=None,
+                             toolbar_location="below",
+                             width=600,
+                             height=400,
+                             legend='top_right',
+                             color=['silver', 'blue'],
+                             webgl=False)
 
-    bokeh_script, (gender_plot_div, age_plot_div, age_gender_plot_F_div, age_gender_plot_M_div) = components((gender_plot, age_plot, age_gender_plot_F, age_gender_plot_M))
+    bokeh_script, (gender_plot_div, age_plot_div, age_gender_plot_F_div, age_gender_plot_M_div) = components(
+        (gender_plot, age_plot, age_gender_plot_F, age_gender_plot_M))
 
     return flask.render_template('single_term_results.html',
                                  query=search_terms,
                                  matches=matches,
                                  bokeh_script=bokeh_script,
-                                 gender_query_adjusted = gender_query_adjusted,
+                                 gender_query_adjusted=gender_query_adjusted,
                                  gender_plot=gender_plot_div,
                                  age_plot=age_plot_div,
                                  age_gender_plot_F=age_gender_plot_F_div,
@@ -207,6 +212,180 @@ def do_single_search(request_form):
                                  nuts_query=nuts_query_norm.to_json(),
                                  outliers=outliers,
                                  available_options=AVAILABLE_OPTIONS)
+
+
+def do_double_search(request_form):
+    """
+    search method called from both welcome() and search()
+    :param request_form:
+    :return:
+    """
+    search_term1 = request_form["doubleTermQuery1"]
+    search_term2 = request_form["doubleTermQuery2"]
+    language_var, country_var = request_form["languageAndRegion"].split(':', 1)
+
+    try:
+        specific_query1 = simple_query_totals({"query": "body_text_ws:%s" % search_term1,
+                                               "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+        specific_query1 = specific_query1[specific_query1.country_code == country_var]
+    except KeyError:
+        return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
+                                     search_mode='double')
+
+    try:
+        specific_query2 = simple_query_totals({"query": "body_text_ws:%s" % search_term2,
+                                               "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+        specific_query2 = specific_query2[specific_query2.country_code == country_var]
+    except KeyError:
+        return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
+                                     search_mode='double')
+
+    # need to check country again for some reason
+    matches = [specific_query1['num_docs'].sum(), specific_query2['num_docs'].sum()]
+
+    #############################
+    # GET TOTALS FOR EVERYTHING #
+    #############################
+    totals = simple_query_totals()
+    country_mask = totals.country_code == country_var
+    totals = totals[country_mask]
+
+    gender_totals = totals.groupby('gender').num_docs.sum()
+
+    age_totals = totals.groupby('age').num_docs.sum()
+    age_totals = sort_and_filter_age(age_totals)
+    age_totals_norm = age_totals / age_totals.sum()
+
+    ###########
+    #  GENDER #
+    ###########
+    gender_query1 = specific_query1.groupby('gender').num_docs.sum()
+    gender_query2 = specific_query2.groupby('gender').num_docs.sum()
+    abs_percentages1 = gender_query1 / gender_totals
+    abs_percentages2 = gender_query2 / gender_totals
+    renormalizer1 = 1.0 / abs_percentages1.sum()
+    renormalizer2 = 1.0 / abs_percentages2.sum()
+    gender_query_adjusted1 = abs_percentages1 * renormalizer1
+    gender_query_adjusted2 = abs_percentages2 * renormalizer2
+
+    gender_comparison = pd.DataFrame(data={search_term1: gender_query1.values, search_term2: gender_query2.values},
+                                     index=gender_query1.index).T
+    gender_comparison_adjusted = pd.DataFrame(
+        data={search_term1: gender_query_adjusted1.values, search_term2: gender_query_adjusted2.values},
+        index=gender_query1.index).T
+
+    del gender_comparison.index.name
+    chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
+    gender_stats_level = bisect(P_LEVELS, pvalue)
+
+    if gender_stats_level == len(P_LEVELS):
+        gender_stats_msg = "Gender difference is <em>not</em> statistically significant (Chi-squared contingency test with p > %.4f)" % (
+            P_LEVELS[-1])
+    else:
+        gender_stats_msg = "Gender difference is statistically significant at p < %s (p = %.4f with Chi-squared contingency test)" % (
+            P_LEVELS[gender_stats_level], pvalue)
+
+    J = pd.DataFrame(gender_comparison_adjusted.unstack())
+    L = pd.DataFrame(data={'variable': [J.index.levels[1][x] for x in J.index.labels[1]],
+                           'gender': [J.index.levels[0][x] for x in J.index.labels[0]],
+                           'count': J.values.T[0].tolist()})
+
+    gender_plot = Bar(L,
+                      group='gender',
+                      label='variable',
+                      values='count',
+                      title="Distribution by gender",
+                      logo=None,
+                      toolbar_location="below",
+                      width=600,
+                      height=400,
+                      legend='top_right',
+                      color=['blue', 'green'],
+                      webgl=False)
+
+    #######
+    # AGE #
+    #######
+    age_specific_query1 = specific_query1.groupby('age').num_docs.sum()
+    age_specific_query1 = sort_and_filter_age(age_specific_query1)
+    age_specific_query_norm1 = age_specific_query1 / age_specific_query1.sum()
+    age_specific_query2 = specific_query2.groupby('age').num_docs.sum()
+    age_specific_query2 = sort_and_filter_age(age_specific_query2)
+    age_specific_query_norm2 = age_specific_query2 / age_specific_query2.sum()
+
+    compare_age_df = pd.DataFrame({'_base_': age_totals_norm,
+                                   '%s' % search_term1: pd.rolling_mean(age_specific_query_norm1, ROLLING_MEAN_FRAME),
+                                   '%s' % search_term2: pd.rolling_mean(age_specific_query_norm2, ROLLING_MEAN_FRAME)
+                                   })
+
+    r, pvalue = spearmanr(compare_age_df[search_term1], compare_age_df[search_term2])
+    age_stats_level = bisect(P_LEVELS, pvalue)
+
+    if age_stats_level == len(P_LEVELS):
+        age_stats_msg = "Age difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
+    else:
+        age_stats_msg = "Age difference is <em>statistically significant</em> at p < %s (p = %s)" % (
+            P_LEVELS[age_stats_level], pvalue)
+
+    age_plot = Line(compare_age_df,
+                    title="Age distribution",
+                    xlabel='age',
+                    logo=None,
+                    toolbar_location="below",
+                    width=1000,
+                    legend='top_right',
+                    color=['silver', 'blue', 'green'],
+                    height=400,
+                    webgl=False)
+
+
+    ########
+    # NUTS #
+    ########
+    # TODO: what about missing regions?
+    nuts_query1 = specific_query1.groupby('nuts_3').num_docs.sum()
+    nuts_query2 = specific_query2.groupby('nuts_3').num_docs.sum()
+    nuts_query_norm1 = nuts_query1 / nuts_query1.sum()
+    nuts_query_norm2 = nuts_query2 / nuts_query2.sum()
+
+    regions = list(sorted(set(nuts_query1.index).union(set(nuts_query2.index))))
+    nutsdiff = pd.DataFrame(0, index=regions, columns=arange(1))
+    nutsdiff[0] = nuts_query_norm1 - nuts_query_norm2
+    nutsdiff['G2'] = abs(nutsdiff[0]) > nutsdiff[0].abs().mean()
+    print(nutsdiff, nuts_query1, nuts_query2)
+
+    outliers = sorted([x for x in regions if nutsdiff['G2'].ix[x].any() == True])
+    is_it_term2 = nutsdiff[0].ix[outliers] < 0
+    outliers1 = ', '.join(
+        sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in is_it_term2.index if is_it_term2[x] == False]))
+    outliers2 = ', '.join(sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in is_it_term2.index if is_it_term2[x] == True]))
+
+    outlier_description = []
+    if outliers1:
+        outlier_description.append(
+            '<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term1, search_term2, outliers1))
+    if outliers2:
+        if outlier_description:
+            outlier_description.append(', while <br />')
+        outlier_description.append(
+            '<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term2, search_term1, outliers2))
+    outlier_description = ''.join(outlier_description)
+
+    bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
+
+    return flask.render_template('comparison_term_results.html',
+                                 query1=search_term1,
+                                 query2=search_term2,
+                                 matches=matches,
+                                 gender_comparison=gender_comparison.to_html(justify='right'),
+                                 gender_stats_msg=gender_stats_msg,
+                                 bokeh_script=bokeh_script,
+                                 gender_plot=gender_plot_div,
+                                 age_plot=age_plot_div,
+                                 country_code=country_var,
+                                 outlier_description=outlier_description,
+                                 available_options=AVAILABLE_OPTIONS
+                                 )
 
 
 
@@ -294,186 +473,5 @@ def single_term_to_JSON(search_term, country_code, language_code):
     return resp.json()
 
 
-def do_double_search(request_form):
-    """
-    search method called from both welcome() and search()
-    :param request_form:
-    :return:
-    """
-    search_term1 = request_form["doubleTermQuery1"]
-    search_term2 = request_form["doubleTermQuery2"]
-    language_var, country_var = request_form["languageAndRegion"].split(':', 1)
-
-    try:
-        specific_query1 = simple_query_totals({"query": "body_text_ws:%s" % search_term1,
-                                          "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-        specific_query1 = specific_query1[specific_query1.country_code == country_var]
-    except KeyError:
-        return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
-                                     search_mode='double')
-
-    try:
-        specific_query2 = simple_query_totals({"query": "body_text_ws:%s" % search_term2,
-                                          "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-        specific_query2 = specific_query2[specific_query2.country_code == country_var]
-    except KeyError:
-        return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
-                                     search_mode='double')
-
-    # need to check country again for some reason
-    matches = [specific_query1['num_docs'].sum(), specific_query2['num_docs'].sum()]
-
-    #############################
-    # GET TOTALS FOR EVERYTHING #
-    #############################
-    totals = simple_query_totals()
-    country_mask = totals.country_code == country_var
-    totals = totals[country_mask]
-
-    gender_totals = totals.groupby('gender').num_docs.sum()
-
-    age_totals = totals.groupby('age').num_docs.sum()
-    age_totals = sort_and_filter_age(age_totals)
-    age_totals_norm = age_totals / age_totals.sum()
-
-
-    ###########
-    #  GENDER #
-    ###########
-    gender_query1 = specific_query1.groupby('gender').num_docs.sum()
-    gender_query2 = specific_query2.groupby('gender').num_docs.sum()
-    abs_percentages1 = gender_query1 / gender_totals
-    abs_percentages2 = gender_query2 / gender_totals
-    renormalizer1 = 1.0 / abs_percentages1.sum()
-    renormalizer2 = 1.0 / abs_percentages2.sum()
-    gender_query_adjusted1 = abs_percentages1 * renormalizer1
-    gender_query_adjusted2 = abs_percentages2 * renormalizer2
-
-    gender_comparison = pd.DataFrame(data={search_term1: gender_query1.values, search_term2: gender_query2.values},
-                                     index=gender_query1.index).T
-    gender_comparison_adjusted = pd.DataFrame(data={search_term1: gender_query_adjusted1.values, search_term2: gender_query_adjusted2.values},
-                                     index=gender_query1.index).T
-
-    del gender_comparison.index.name
-    chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
-    gender_stats_level = bisect(P_LEVELS, pvalue)
-
-    if gender_stats_level == len(P_LEVELS):
-        gender_stats_msg = "Gender difference is <em>not</em> statistically significant (Chi-squared contingency test with p > %.4f)" % (
-        P_LEVELS[-1])
-    else:
-        gender_stats_msg = "Gender difference is statistically significant at p < %s (p = %.4f with Chi-squared contingency test)" % (
-        P_LEVELS[gender_stats_level], pvalue)
-
-
-    J = pd.DataFrame(gender_comparison_adjusted.unstack())
-    L = pd.DataFrame(data={'variable': [J.index.levels[1][x] for x in J.index.labels[1]],
-                           'gender': [J.index.levels[0][x] for x in J.index.labels[0]],
-                           'count': J.values.T[0].tolist()})
-
-    gender_plot = Bar(L,
-                      group='gender',
-                      label='variable',
-                      values='count',
-                      title="Distribution by gender",
-                      logo=None,
-                      toolbar_location="below",
-                      width=600,
-                      height=400,
-                      legend='top_right',
-                      color=['blue', 'green'],
-                      webgl=True)
-
-    #######
-    # AGE #
-    #######
-    age_specific_query1 = specific_query1.groupby('age').num_docs.sum()
-    age_specific_query1 = sort_and_filter_age(age_specific_query1)
-    age_specific_query_norm1 = age_specific_query1 / age_specific_query1.sum()
-    age_specific_query2 = specific_query2.groupby('age').num_docs.sum()
-    age_specific_query2 = sort_and_filter_age(age_specific_query2)
-    age_specific_query_norm2 = age_specific_query2 / age_specific_query2.sum()
-
-
-    compare_age_df = pd.DataFrame({'_base_': age_totals_norm,
-                           '%s'%search_term1: pd.rolling_mean(age_specific_query_norm1, ROLLING_MEAN_FRAME),
-                           '%s'%search_term2: pd.rolling_mean(age_specific_query_norm2, ROLLING_MEAN_FRAME)
-                                   })
-
-    r, pvalue = spearmanr(compare_age_df[search_term1], compare_age_df[search_term2])
-    age_stats_level = bisect(P_LEVELS, pvalue)
-
-    if age_stats_level == len(P_LEVELS):
-        age_stats_msg = "Age difference is <em>not</em> statistically significant (p > %s)" % (P_LEVELS[-1])
-    else:
-        age_stats_msg = "Age difference is <em>statistically significant</em> at p < %s (p = %s)" % (
-        P_LEVELS[age_stats_level], pvalue)
-
-    age_plot = Line(compare_age_df,
-                   title="Age distribution",
-                    xlabel='age',
-                   logo=None,
-                   toolbar_location="below",
-                   width=1000,
-                    legend='top_right',
-                    color=['silver', 'blue', 'green'],
-                   height=400, webgl=True)
-
-    # age_plot.xaxis.bounds = (MIN_AGE, MAX_AGE)
-
-    ########
-    # NUTS #
-    ########
-    # TODO: what about missing regions?
-    nuts_query1 = specific_query1.groupby('nuts_3').num_docs.sum()
-    nuts_query2 = specific_query2.groupby('nuts_3').num_docs.sum()
-    nuts_query_norm1 = nuts_query1 / nuts_query1.sum()
-    nuts_query_norm2 = nuts_query2 / nuts_query2.sum()
-
-    regions = list(sorted(set(nuts_query1.index).union(set(nuts_query2.index))))
-    nutsdiff = pd.DataFrame(0, index=regions, columns=arange(1))
-    nutsdiff[0] = nuts_query_norm1 - nuts_query_norm2
-    nutsdiff['G2'] = abs(nutsdiff[0]) > nutsdiff[0].abs().mean()
-    print(nutsdiff, nuts_query1, nuts_query2)
-
-    outliers = sorted([x for x in regions if nutsdiff['G2'].ix[x].any() == True])
-    is_it_term2 = nutsdiff[0].ix[outliers] < 0
-    outliers1 = ', '.join(sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in is_it_term2.index if is_it_term2[x] == False]))
-    outliers2 = ', '.join(sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in is_it_term2.index if is_it_term2[x] == True]))
-
-    outlier_description = []
-    if outliers1:
-        outlier_description.append(
-            '<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term1, search_term2, outliers1))
-    if outliers2:
-        if outlier_description:
-            outlier_description.append(', while <br />')
-        outlier_description.append(
-            '<em>%s</em> is more prevalent than <em>%s</em> in regions %s' % (search_term2, search_term1, outliers2))
-    outlier_description = ''.join(outlier_description)
-
-
-    bokeh_script, (gender_plot_div, age_plot_div) = components((gender_plot, age_plot))
-
-
-    return flask.render_template('comparison_term_results.html',
-                             query1=search_term1,
-                             query2=search_term2,
-                            matches=matches,
-                             gender_comparison=gender_comparison.to_html(justify='right'),
-                             gender_stats_msg=gender_stats_msg,
-                             bokeh_script=bokeh_script,
-                             gender_plot=gender_plot_div,
-                             age_plot=age_plot_div,
-                             country_code=country_var,
-                             outlier_description=outlier_description,
-                             available_options=AVAILABLE_OPTIONS
-                             # age_comparison=age_comparison.T.to_html(justify='right'),
-                             # age_stats_msg=age_stats_msg,
-                             # map_views=MAP_VIEWS,
-                             )
-
-
-
 if __name__ == '__main__':
-    HUMBOLDT_APP.run(debug=True)
+    app.run(debug=True)
