@@ -25,10 +25,13 @@
     text-align: right;
 }
 
+.humboldt_main_container {
+    margin-bottom: 6em;
+}
 
 #mapid {
     height: 400px;
-    width: 500px;
+    width: 600px;
     margin: auto;
 }
 
@@ -41,3 +44,4 @@
     align: center;
     margin: auto;
 }
+

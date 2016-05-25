@@ -12,12 +12,12 @@
 
 
     <div class="row">
-    Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ json_results1['response']['numFound'] }}  and {{ json_results2.response.numFound }} results.
+    Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ matches[0] }}  and {{ matches[1] }} results.
     </div>
 
     <h3>Comparison by gender</h3>
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-4">
         {{ gender_comparison | safe }}
             Raw counts for each variable per gender.
         {{ gender_stats_msg | safe }}
@@ -25,20 +25,20 @@
         </div>
         <div class="col-md-6">
             {{ gender_plot | safe }}
-            Distribution over gender.
-            Information normalized by total number of records for {{ country_code }}, {{ country_total }}.
+            Distribution over gender, adjusted for sample size.
         </div>
 
-        <!--<div class="col-md-8">{{ age_plot | safe }}</div>-->
-        <!--<div class="col-md-8">{{ age_gender_plot | safe }}</div>-->
     </div>
 
-    <!--<div id="mapid"></div>-->
 
     <h3>Comparison by age</h3>
     <div class="row">
-        {{ age_comparison | safe }}
-        {{ age_stats_msg | safe }}
+        <div class="col-md-10">
+            {{ age_plot | safe }}
+            Distribution over age, adjusted for sample size.
+        </div>
+        <!--{{ age_comparison | safe }}-->
+        <!--{{ age_stats_msg | safe }}-->
     </div>
 
 
@@ -49,9 +49,9 @@
 
 
 
-    <pre>
-    {{ json_results1 }}
-    </pre>
+    <!--<pre>-->
+    <!--{{ json_results1 }}-->
+    <!--</pre>-->
 
 
 {% endblock %}
