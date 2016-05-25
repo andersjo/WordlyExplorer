@@ -30,9 +30,9 @@
 <div class="row">
 Currently available records:
   <ul>
-{% for (language_code, country_code, language_name, country_name) in available_options %}
-  <li>{{language_name}}/{{country_name}}: {{totals[totals['country_code'] == country_code]['count'].sum()}}</li>
-{% endfor %}
+    {% for (language_code, country_code, language_name, country_name) in available_options %}
+      <li>{{language_name}}/{{country_name}}: {{ totals[country_code] }}</li>
+    {% endfor %}
   </ul>
 </div>
 

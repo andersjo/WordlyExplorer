@@ -1,0 +1,58 @@
+{% extends "humboldt_layout.html" %}
+
+{% block title %}Search results{% endblock %}
+
+{% block content %}
+
+    {{ bokeh_script | safe }}
+
+    <div class="row">
+    {% include 'comparison_search_bar.html' %}
+    </div>
+
+
+    <div class="row">
+    Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ json_results1['response']['numFound'] }}  and {{ json_results2.response.numFound }} results.
+    </div>
+
+    <h3>Comparison by gender</h3>
+    <div class="row">
+        <div class="col-md-2">
+        {{ gender_comparison | safe }}
+            Raw counts for each variable per gender.
+        {{ gender_stats_msg | safe }}
+
+        </div>
+        <div class="col-md-6">
+            {{ gender_plot | safe }}
+            Distribution over gender.
+            Information normalized by total number of records for {{ country_code }}, {{ country_total }}.
+        </div>
+
+        <!--<div class="col-md-8">{{ age_plot | safe }}</div>-->
+        <!--<div class="col-md-8">{{ age_gender_plot | safe }}</div>-->
+    </div>
+
+    <!--<div id="mapid"></div>-->
+
+    <h3>Comparison by age</h3>
+    <div class="row">
+        {{ age_comparison | safe }}
+        {{ age_stats_msg | safe }}
+    </div>
+
+
+    <h3>Comparison by region</h3>
+    <div class="row">
+        {{ outlier_description | safe }}
+    </div>
+
+
+
+    <pre>
+    {{ json_results1 }}
+    </pre>
+
+
+{% endblock %}
+

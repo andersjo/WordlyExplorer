@@ -100,6 +100,20 @@ def simple_query_totals(user_query=None):
 
     return D
 
+def sort_and_filter_age(age_df):
+    age_df.index = age_df.index.astype(int)
+    ages_index = [age for age in sorted(age_df.index)
+                  if age >= 16 and age <= 80]
+    return age_df.ix[ages_index]
+
+
+def prepare_age_and_gender(df):
+    age_gender_df = df.groupby(['age', 'gender']).num_docs.sum()
+    age_gender_df = age_gender_df.unstack('gender')
+    age_gender_df = sort_and_filter_age(age_gender_df)
+
+    # Normalize
+    return (age_gender_df / age_gender_df.sum())
 
 if __name__ == '__main__':
     totals = simple_query_totals()

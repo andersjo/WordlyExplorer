@@ -3,7 +3,8 @@ from _bisect import bisect
 import flask
 import pandas as pd
 import requests
-from bokeh.charts import Bar
+from bokeh.charts import Bar, Line
+from bokeh.models.ranges import DataRange1d
 from bokeh.embed import components
 from config import AVAILABLE_OPTIONS
 from config import MAP_VIEWS
@@ -11,7 +12,9 @@ from config import MIN_AGE, MAX_AGE
 from config import NOT_AVAIL
 from config import P_LEVELS
 from config import SOLR_QUERY_URL
-from config import TOTALS
+from config import ROLLING_MEAN_FRAME
+# from config import TOTALS
+from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender
 from flask import request
 from numpy import arange
 from scipy.stats import chi2_contingency, spearmanr
@@ -36,8 +39,8 @@ def welcome():
 
     else:
         return flask.render_template('index.html', map_views=MAP_VIEWS,
-                                     available_options=AVAILABLE_OPTIONS,
-                                     totals=TOTALS)
+                                     available_options=AVAILABLE_OPTIONS
+                                     )
 
 
 @HUMBOLDT_APP.route('/search', methods=['GET', 'POST'])
@@ -52,10 +55,14 @@ def search():
             return do_double_search(request.form)
 
     else:
+        totals = simple_query_totals()
+        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'] for country_info in AVAILABLE_OPTIONS}
+
+
         return flask.render_template('search.html',
                                      map_views=MAP_VIEWS,
                                      available_options=AVAILABLE_OPTIONS,
-                                     totals=TOTALS)
+                                     totals=country_totals)
 
 
 @HUMBOLDT_APP.route('/about')
@@ -76,21 +83,6 @@ def contact():
     return flask.render_template('contact.html')
 
 
-@HUMBOLDT_APP.route('/maptest')
-def maptest():
-    return flask.render_template('maptest.html')
-
-
-@HUMBOLDT_APP.route('/comparisontest')
-def comparisontest():
-    if request.method == 'POST':
-        return do_double_search(request.form)
-    else:
-        return flask.render_template('comparison_test.html',
-                                     map_views=MAP_VIEWS,
-                                     available_options=AVAILABLE_OPTIONS)
-
-
 def do_single_search(request_form):
     """
     search method called from both welcome() and search()
@@ -99,80 +91,128 @@ def do_single_search(request_form):
     """
     search_terms = request_form["singleTermQuery"]
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
-    json_results = single_term_to_JSON(search_terms,
-                                       language_code=language_var,
-                                       country_code=country_var)
-
-    if json_results['response']['numFound'] == 0:
+    try:
+        specific_query = simple_query_totals({"query": "body_text_ws:%s" % search_terms,
+                                          "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+    except KeyError:
         return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS,
                                      search_mode='single')
 
-    country_total = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
+    # need to check country again for some reason
+    specific_query = specific_query[specific_query.country_code == country_var]
+    matches = len(specific_query)
 
-    gender_buckets = buckets_to_series(json_results['facets']['genders']['buckets'])
-    gender_buckets = gender_buckets[[val for val in gender_buckets.index if val != NOT_AVAIL]] / country_total
-    age_buckets = buckets_to_series(json_results['facets']['ages']['buckets']) / country_total
-    age_gender_buckets = compound_bucket_to_series(json_results['facets']['gender_and_age']['buckets'],
-                                                   'gender_and_age')
-    age_gender_buckets['count'] /= country_total
-    age_gender_buckets = age_gender_buckets[
-        (age_gender_buckets['age'] <= MAX_AGE) & (age_gender_buckets['age'] >= MIN_AGE) & (
-            age_gender_buckets['gender'] != NOT_AVAIL)].sort('age')
+    #############################
+    # GET TOTALS FOR EVERYTHING #
+    #############################
+    totals = simple_query_totals()
+    country_mask = totals.country_code == country_var
+    totals = totals[country_mask]
 
-    # TODO: get total count per region and normalize by that?
-    nuts_buckets = buckets_to_series(json_results['facets']['nuts_3_regions']['buckets'])
-    # nuts_totals = TOTALS.groupby('nuts_3').sum()
-    nuts_buckets_norm = nuts_buckets[[val for val in nuts_buckets.index if val.lower().startswith(country_var)]]
-    nuts_buckets_norm /= nuts_buckets_norm.sum()
-    nuts_buckets = nuts_buckets_norm.to_json()  # nuts_totals.ix[nuts_buckets.index, :]['count'].fillna(1).values).to_json()
-    # is a term more prevalent in on region, i.e., more frequent than the median?
-    special_regions = nuts_buckets_norm > nuts_buckets_norm.median()
+    gender_totals = totals.groupby('gender').num_docs.sum()
+
+    age_totals = totals.groupby('age').num_docs.sum()
+    age_totals = sort_and_filter_age(age_totals)
+    age_totals_norm = age_totals / age_totals.sum()
+
+    nuts_total = totals.groupby('nuts_3').num_docs.sum()
+
+    ###########
+    #  GENDER #
+    ###########
+    gender_query = specific_query.groupby('gender').num_docs.sum()
+    abs_percentages = gender_query / gender_totals
+    renormalizer = 1.0 / abs_percentages.sum()
+    gender_query_adjusted = abs_percentages * renormalizer
+
+    #######
+    # AGE #
+    #######
+    age_specific_query = specific_query.groupby('age').num_docs.sum()
+    age_specific_query = sort_and_filter_age(age_specific_query)
+    age_specific_query_norm = age_specific_query / age_specific_query.sum()
+    compare_age_df = pd.DataFrame({'base': age_totals_norm,
+                           '%s'%search_terms: pd.rolling_mean(age_specific_query_norm, ROLLING_MEAN_FRAME)})
+
+    ##################
+    # AGE AND GENDER #
+    ##################
+    age_and_gender_totals = prepare_age_and_gender(totals)
+    age_and_gender_specific_query = prepare_age_and_gender(specific_query)
+
+    compare_male_df = pd.DataFrame({'base': age_and_gender_totals['M'],
+                                '%s'%search_terms: pd.rolling_mean(age_and_gender_specific_query['M'], ROLLING_MEAN_FRAME)})
+    compare_female_df = pd.DataFrame({'base': age_and_gender_totals['F'],
+                                '%s'%search_terms: pd.rolling_mean(age_and_gender_specific_query['F'], ROLLING_MEAN_FRAME)})
+
+    ########
+    # NUTS #
+    ########
+    nuts_query = specific_query.groupby('nuts_3').num_docs.sum()
+    nuts_total = nuts_query.sum()
+    nuts_query_norm = nuts_query / nuts_total
+    print(nuts_query_norm)
+
+    special_regions = nuts_query_norm > nuts_query_norm.median()
     outliers = ', '.join(sorted([x for x in special_regions.index if special_regions.ix[x].any() == True]))
 
     # TODO move plotting to its own function
-    gender_plot = Bar(gender_buckets,
+    gender_plot = Bar(gender_query_adjusted,
                       title="Gender distribution",
                       logo=None,
                       toolbar_location="below",
                       width=300,
                       height=400, webgl=True)
 
-    age_plot = Bar(age_buckets,
+    age_range = list(map(str, range(MIN_AGE, MAX_AGE)))
+    age_plot = Line(compare_age_df,
                    title="Age distribution",
+                    xlabel='age',
                    logo=None,
                    toolbar_location="below",
                    width=800,
+                    legend='top_right',
+                    color=['silver', 'red'],
                    height=400, webgl=True)
 
-    age_gender_plot = Bar(age_gender_buckets,
-                          group='gender',
-                          label='age',
-                          values='count',
-                          title="Age distribution by gender",
-                          logo=None,
-                          toolbar_location="below",
-                          width=1200,
-                          height=400,
-                          legend='top_right',
-                          color=['blue', 'green'], webgl=True)
+    age_gender_plot_M = Line(compare_male_df,
+                   title="Age distribution for men",
+                    xlabel='age',
+                    x_range=DataRange1d(start=MIN_AGE, end=MAX_AGE),
+                   logo=None,
+                   toolbar_location="below",
+                   width=600,
+                    legend='top_right',
+                    color=['silver', 'green'],
+                   height=400, webgl=True)
+    age_gender_plot_F = Line(compare_female_df,
+                   title="Age distribution for women",
+                    xlabel='age',
+                    x_range=DataRange1d(start=MIN_AGE, end=MAX_AGE),
+                   logo=None,
+                   toolbar_location="below",
+                   width=600,
+                    legend='top_right',
+                    color=['silver', 'blue'],
+                   height=400, webgl=True)
 
-    bokeh_script, (gender_plot_div, age_plot_div, age_gender_plot_div) = components(
-        (gender_plot, age_plot, age_gender_plot))
+    bokeh_script, (gender_plot_div, age_plot_div, age_gender_plot_F_div, age_gender_plot_M_div) = components((gender_plot, age_plot, age_gender_plot_F, age_gender_plot_M))
 
     return flask.render_template('single_term_results.html',
-                                 query=request_form["singleTermQuery"],
+                                 query=search_terms,
+                                 matches=matches,
                                  bokeh_script=bokeh_script,
+                                 gender_query_adjusted = gender_query_adjusted,
                                  gender_plot=gender_plot_div,
                                  age_plot=age_plot_div,
-                                 age_gender_plot=age_gender_plot_div,
-                                 json_results=json_results,
+                                 age_gender_plot_F=age_gender_plot_F_div,
+                                 age_gender_plot_M=age_gender_plot_M_div,
                                  country_code=country_var,
                                  map_views=MAP_VIEWS,
-                                 nuts_buckets=nuts_buckets,
-                                 country_total=country_total,
+                                 nuts_query=nuts_query_norm.to_json(),
                                  outliers=outliers,
-                                 available_options=AVAILABLE_OPTIONS
-                                 )
+                                 available_options=AVAILABLE_OPTIONS)
+
 
 
 def compound_bucket_to_series(count_dict_list, compound_field):
@@ -230,12 +270,6 @@ def single_term_to_JSON(search_term, country_code, language_code):
                 "type": "range",
                 "field": "age_i",
                 "gap": 1
-                # "facet": {
-                #     "genders":{
-                #     "type": "terms",
-                #     "field": "gender_s"
-                #     }
-                # }
 
             },
             "nuts_3_regions": {
@@ -274,21 +308,53 @@ def do_double_search(request_form):
     search_term1 = request_form["doubleTermQuery1"]
     search_term2 = request_form["doubleTermQuery2"]
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
-    json_results1 = single_term_to_JSON(search_term1,
-                                        language_code=language_var,
-                                        country_code=country_var)
-    json_results2 = single_term_to_JSON(search_term2,
-                                        language_code=language_var,
-                                        country_code=country_var)
 
-    if json_results1['response']['numFound'] == 0:
+    try:
+        specific_query1 = simple_query_totals({"query": "body_text_ws:%s" % search_term1,
+                                          "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+        specific_query1 = specific_query1[specific_query1.country_code == country_var]
+    except KeyError:
         return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
-    elif json_results2['response']['numFound'] == 0:
+
+    try:
+        specific_query2 = simple_query_totals({"query": "body_text_ws:%s" % search_term2,
+                                          "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+        specific_query2 = specific_query2[specific_query2.country_code == country_var]
+    except KeyError:
         return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
 
-    country_total = TOTALS[TOTALS['country_code'] == country_var]['count'].sum()
+    # need to check country again for some reason
+    matches = [len(specific_query1), len(specific_query2)]
+
+    #############################
+    # GET TOTALS FOR EVERYTHING #
+    #############################
+    totals = simple_query_totals()
+    country_mask = totals.country_code == country_var
+    totals = totals[country_mask]
+
+    gender_totals = totals.groupby('gender').num_docs.sum()
+
+    age_totals = totals.groupby('age').num_docs.sum()
+    age_totals = sort_and_filter_age(age_totals)
+    age_totals_norm = age_totals / age_totals.sum()
+
+
+    ###########
+    #  GENDER #
+    ###########
+    gender_query1 = specific_query1.groupby('gender').num_docs.sum()
+    gender_query2 = specific_query2.groupby('gender').num_docs.sum()
+    abs_percentages1 = gender_query1 / gender_totals
+    abs_percentages2 = gender_query2 / gender_totals
+    renormalizer1 = 1.0 / abs_percentages1.sum()
+    renormalizer2 = 1.0 / abs_percentages2.sum()
+    gender_query_adjusted1 = abs_percentages1 * renormalizer1
+    gender_query_adjusted2 = abs_percentages2 * renormalizer2
+
+
 
     gender_buckets1 = buckets_to_series(json_results1['facets']['genders']['buckets'])
     gender_buckets2 = buckets_to_series(json_results2['facets']['genders']['buckets'])
