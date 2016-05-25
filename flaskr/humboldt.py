@@ -54,8 +54,7 @@ def search():
 
     else:
         totals = simple_query_totals()
-        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'] for country_info in AVAILABLE_OPTIONS}
-
+        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for country_info in AVAILABLE_OPTIONS}
 
         return flask.render_template('search.html',
                                      map_views=MAP_VIEWS,
@@ -98,7 +97,7 @@ def do_single_search(request_form):
 
     # need to check country again for some reason
     specific_query = specific_query[specific_query.country_code == country_var]
-    matches = len(specific_query)
+    matches = specific_query['num_docs'].sum()
 
     #############################
     # GET TOTALS FOR EVERYTHING #
@@ -322,7 +321,7 @@ def do_double_search(request_form):
                                      search_mode='double')
 
     # need to check country again for some reason
-    matches = [len(specific_query1), len(specific_query2)]
+    matches = [specific_query1['num_docs'].sum(), specific_query2['num_docs'].sum()]
 
     #############################
     # GET TOTALS FOR EVERYTHING #
@@ -478,5 +477,3 @@ def do_double_search(request_form):
 
 if __name__ == '__main__':
     HUMBOLDT_APP.run(debug=True)
-    # DebuggedApplication(HUMBOLDT_APP, evalex=True)
-    # .run(debug=True)

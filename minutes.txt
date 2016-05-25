@@ -88,7 +88,6 @@ PLOTS/INFO:
 ================================================================================================================
 
 TODO:
-- the totals seem to not add up (see traels/lort comparison overall vs gender stats table)
 - add worked examples on front page: how do we link to a results page?
 - age plots have the wrong x-label range!
 - at the end of side-by-side, include links to the individual queries

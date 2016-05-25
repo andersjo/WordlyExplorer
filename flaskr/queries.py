@@ -1,4 +1,3 @@
-import json
 import requests
 import pandas as pd
 import numpy as np
@@ -103,7 +102,7 @@ def simple_query_totals(user_query=None):
 def sort_and_filter_age(age_df):
     age_df.index = age_df.index.astype(int)
     ages_index = [age for age in sorted(age_df.index)
-                  if age >= 16 and age <= 80]
+                  if age >= MIN_AGE and age <= MAX_AGE]
     return age_df.ix[ages_index]
 
 
