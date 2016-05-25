@@ -127,6 +127,7 @@ def do_single_search(request_form):
     age_specific_query_norm = age_specific_query / age_specific_query.sum()
     compare_age_df = pd.DataFrame({'_base_': age_totals_norm,
                                    '%s' % search_terms: pd.rolling_mean(age_specific_query_norm, ROLLING_MEAN_FRAME)})
+    compare_age_df['i'] = compare_age_df.index
 
     ##################
     # AGE AND GENDER #
@@ -137,9 +138,12 @@ def do_single_search(request_form):
     compare_male_df = pd.DataFrame({'_base_': age_and_gender_totals['M'],
                                     '%s' % search_terms: pd.rolling_mean(age_and_gender_specific_query['M'],
                                                                          ROLLING_MEAN_FRAME)})
+    compare_male_df['i'] = compare_male_df.index
+
     compare_female_df = pd.DataFrame({'_base_': age_and_gender_totals['F'],
                                       '%s' % search_terms: pd.rolling_mean(age_and_gender_specific_query['F'],
                                                                            ROLLING_MEAN_FRAME)})
+    compare_female_df['i'] = compare_female_df.index
 
     ########
     # NUTS #
@@ -148,6 +152,7 @@ def do_single_search(request_form):
     nuts_total = nuts_query.sum()
     nuts_query_norm = nuts_query / nuts_total
     special_regions = nuts_query_norm > nuts_query_norm.median()
+
     outliers = ', '.join(
         sorted(['%s (%s)' % (NUTS_NAMES[x], x) for x in special_regions.index if special_regions.ix[x].any() == True]))
 
@@ -161,8 +166,8 @@ def do_single_search(request_form):
                       height=400,
                       webgl=False)
 
-    age_range = list(map(str, range(MIN_AGE, MAX_AGE)))
     age_plot = Line(compare_age_df,
+                    x='i',
                     title="Age distribution",
                     x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
                     xlabel='age',
@@ -174,9 +179,9 @@ def do_single_search(request_form):
                     legend='top_right',
                     color=['silver', 'red'],
                     webgl=False)
-    print(compare_age_df)
 
     age_gender_plot_M = Line(compare_male_df,
+                    x='i',
                              title="Age distribution for men",
                              xlabel='age',
                              ylabel="percentage",
@@ -189,6 +194,7 @@ def do_single_search(request_form):
                              color=['silver', 'green'],
                              webgl=False)
     age_gender_plot_F = Line(compare_female_df,
+                    x='i',
                              title="Age distribution for women",
                              xlabel='age',
                              x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
@@ -332,7 +338,9 @@ def do_double_search(request_form):
         age_stats_msg = "Age difference is <em>statistically significant</em> at p < %s (p = %s)" % (
             P_LEVELS[age_stats_level], pvalue)
 
+    compare_age_df['i'] = compare_age_df.index
     age_plot = Line(compare_age_df,
+                    x='i',
                     title="Age distribution",
                     xlabel='age',
                     logo=None,
