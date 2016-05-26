@@ -26,7 +26,10 @@ def welcome():
     :return:
     """
     if request.method == 'POST':
-        return do_single_search(request.form)
+        if len(request.form) == 2:
+            return do_single_search(request.form)
+        elif len(request.form) == 3:
+            return do_double_search(request.form)
 
     else:
         totals = simple_query_totals()
