@@ -5,36 +5,8 @@
 {% block content %}
 
 
-<div role="tabpanel" class="row">
+  {% include 'search_panel.html' %}
 
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#singlesearch" aria-controls="singlesearch" role="tab" data-toggle="tab">Single Term Search</a></li>
-    <li role="presentation"><a href="#comparisonsearch" aria-controls="comparisonsearch" role="tab" data-toggle="tab">Comparison Search</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="singlesearch">
-        {% include 'single_search_bar.html' %}
-    </div>
-
-    <div role="tabpanel" class="tab-pane fade" id="comparisonsearch">
-        {% include 'comparison_search_bar.html' %}
-    </div>
-
-  </div>
-
-</div>
-
-<div class="row">
-Currently available records:
-  <ul>
-    {% for (language_code, country_code, language_name, country_name) in available_options %}
-      <li>{{language_name}}/{{country_name}}: {{ totals[country_code] }}</li>
-    {% endfor %}
-  </ul>
-</div>
 
 
 {% endblock %}

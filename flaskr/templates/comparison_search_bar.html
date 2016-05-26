@@ -11,8 +11,12 @@
             <label for="languageAndRegion">Where</label>
             <select class="form-control" name="languageAndRegion">
                 {% print('OPTIONS:', available_options) %}
-                {% for (language_code, country_code, language_name, country_name) in available_options %}
-                <option value="{{language_code}}:{{country_code}}">{{language_name}}/{{country_name}}</option>
+                {% for (language_code, iso_code, language_name, country_name) in available_options %}
+                <option value="{{language_code}}:{{iso_code}}"
+                {% if country_code == iso_code %}
+                selected
+                {% endif %}
+                >{{language_name}}/{{country_name}}</option>
                 {% endfor %}
             </select>
         </div>

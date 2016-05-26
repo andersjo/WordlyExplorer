@@ -1,8 +1,6 @@
 from _bisect import bisect
-
 import flask
 import pandas as pd
-import requests
 from bokeh.charts import Bar, Line
 from bokeh.embed import components
 from bokeh.models import Range1d
@@ -12,7 +10,6 @@ from config import MIN_AGE, MAX_AGE
 from config import NUTS_NAMES
 from config import P_LEVELS
 from config import ROLLING_MEAN_FRAME
-from config import SOLR_QUERY_URL
 from flask import request
 from numpy import arange
 from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender
@@ -32,9 +29,13 @@ def welcome():
         return do_single_search(request.form)
 
     else:
+        totals = simple_query_totals()
+        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
+                          country_info in AVAILABLE_OPTIONS}
+
         return flask.render_template('index.html', map_views=MAP_VIEWS,
-                                     available_options=AVAILABLE_OPTIONS
-                                     )
+                                     available_options=AVAILABLE_OPTIONS,
+                                     totals=country_totals)
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -125,8 +126,8 @@ def do_single_search(request_form):
     age_specific_query = specific_query.groupby('age').num_docs.sum()
     age_specific_query = sort_and_filter_age(age_specific_query)
     age_specific_query_norm = age_specific_query / age_specific_query.sum()
-    compare_age_df = pd.DataFrame({'_base_': age_totals_norm,
-                                   '%s' % search_terms: pd.rolling_mean(age_specific_query_norm, ROLLING_MEAN_FRAME)})
+    compare_age_df = pd.DataFrame({'background distribution': age_totals_norm,
+                                   'query': pd.rolling_mean(age_specific_query_norm, ROLLING_MEAN_FRAME)})
     compare_age_df['i'] = compare_age_df.index
 
     ##################
@@ -135,14 +136,14 @@ def do_single_search(request_form):
     age_and_gender_totals = prepare_age_and_gender(totals)
     age_and_gender_specific_query = prepare_age_and_gender(specific_query)
 
-    compare_male_df = pd.DataFrame({'_base_': age_and_gender_totals['M'],
-                                    '%s' % search_terms: pd.rolling_mean(age_and_gender_specific_query['M'],
-                                                                         ROLLING_MEAN_FRAME)})
+    compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M'],
+                                    'query': pd.rolling_mean(age_and_gender_specific_query['M'],
+                                                             ROLLING_MEAN_FRAME)})
     compare_male_df['i'] = compare_male_df.index
 
-    compare_female_df = pd.DataFrame({'_base_': age_and_gender_totals['F'],
-                                      '%s' % search_terms: pd.rolling_mean(age_and_gender_specific_query['F'],
-                                                                           ROLLING_MEAN_FRAME)})
+    compare_female_df = pd.DataFrame({'background distribution': age_and_gender_totals['F'],
+                                      'query': pd.rolling_mean(age_and_gender_specific_query['F'],
+                                                               ROLLING_MEAN_FRAME)})
     compare_female_df['i'] = compare_female_df.index
 
     ########
@@ -181,7 +182,7 @@ def do_single_search(request_form):
                     webgl=False)
 
     age_gender_plot_M = Line(compare_male_df,
-                    x='i',
+                             x='i',
                              title="Age distribution for men",
                              xlabel='age',
                              ylabel="percentage",
@@ -194,7 +195,7 @@ def do_single_search(request_form):
                              color=['silver', 'green'],
                              webgl=False)
     age_gender_plot_F = Line(compare_female_df,
-                    x='i',
+                             x='i',
                              title="Age distribution for women",
                              xlabel='age',
                              x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
@@ -324,12 +325,12 @@ def do_double_search(request_form):
     age_specific_query2 = sort_and_filter_age(age_specific_query2)
     age_specific_query_norm2 = age_specific_query2 / age_specific_query2.sum()
 
-    compare_age_df = pd.DataFrame({'_base_': age_totals_norm,
-                                   '%s' % search_term1: pd.rolling_mean(age_specific_query_norm1, ROLLING_MEAN_FRAME),
-                                   '%s' % search_term2: pd.rolling_mean(age_specific_query_norm2, ROLLING_MEAN_FRAME)
+    compare_age_df = pd.DataFrame({'background distribution': age_totals_norm,
+                                   'first term': pd.rolling_mean(age_specific_query_norm1, ROLLING_MEAN_FRAME),
+                                   'second term': pd.rolling_mean(age_specific_query_norm2, ROLLING_MEAN_FRAME)
                                    })
 
-    r, pvalue = spearmanr(compare_age_df[search_term1], compare_age_df[search_term2])
+    r, pvalue = spearmanr(compare_age_df['first term'], compare_age_df['second term'])
     age_stats_level = bisect(P_LEVELS, pvalue)
 
     if age_stats_level == len(P_LEVELS):

@@ -6,18 +6,18 @@ MIN_AGE = 16
 MAX_AGE = 81
 P_LEVELS = [0.01, 0.05, 0.1]
 ROLLING_MEAN_FRAME = 2
+NOT_AVAIL = "NA"
 
 # list of language code, country code, language name, and country name
 AVAILABLE_OPTIONS = [('da', 'dk', 'Danish', 'Denmark'),
-                     ('en', 'uk', 'English', 'UK')]  # , ('fr', 'fr', 'French', 'France')]
+                     ('en', 'uk', 'English', 'UK')]#, ('fr', 'fr', 'French', 'France')]
 
 # map info: latitude, longitude, zoom level
 MAP_VIEWS = {
     'uk': ([54.5, -4], 5),
     'dk': ([56, 10.5], 6),
+    'fr': ([46, 2], 5),
 }
-
-NOT_AVAIL = "NA"
 
 NUTS_NAMES = {"BE100": "Arr. de Bruxelles-Capitale / Arr. van Brussel-Hoofdstad", "BE211": "Arr. Antwerpen",
               "BE212": "Arr. Mechelen", "BE213": "Arr. Turnhout", "BE221": "Arr. Hasselt", "BE222": "Arr. Maaseik",
