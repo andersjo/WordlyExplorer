@@ -70,7 +70,7 @@ def simple_query_totals(user_query=None):
 
 
     resp = perform_query(json_query)
-    print("Query took ", resp['responseHeader']['QTime'])
+    # print("Query took ", resp['responseHeader']['QTime'])
     count_dict_list = resp["facets"][compound_field]["buckets"]
 
     field_parts = compound_field.split("_and_")

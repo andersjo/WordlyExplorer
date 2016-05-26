@@ -365,7 +365,6 @@ def do_double_search(request_form):
     nutsdiff = pd.DataFrame(0, index=regions, columns=arange(1))
     nutsdiff[0] = nuts_query_norm1 - nuts_query_norm2
     nutsdiff['G2'] = abs(nutsdiff[0]) > nutsdiff[0].abs().mean()
-    print(nutsdiff, nuts_query1, nuts_query2)
 
     outliers = sorted([x for x in regions if nutsdiff['G2'].ix[x].any() == True])
     is_it_term2 = nutsdiff[0].ix[outliers] < 0
