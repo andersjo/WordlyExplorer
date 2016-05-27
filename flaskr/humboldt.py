@@ -1,4 +1,5 @@
 from _bisect import bisect
+
 import flask
 import pandas as pd
 from bokeh.charts import Bar, Line
@@ -306,6 +307,7 @@ def do_double_search(request_form):
                            'count': J.values.T[0].tolist()})
 
     gender_plot = Bar(L,
+                      ylabel="percentage",
                       group='gender',
                       label='variable',
                       values='count',
@@ -346,6 +348,7 @@ def do_double_search(request_form):
     age_plot = Line(compare_age_df,
                     x='i',
                     title="Age distribution",
+                    ylabel="percentage",
                     xlabel='age',
                     logo=None,
                     toolbar_location="below",
