@@ -88,7 +88,7 @@ def do_single_search(request_form):
     :param request_form:
     :return:
     """
-    search_terms = request_form["singleTermQuery"]
+    search_terms = request_form["singleTermQuery"].lower()
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
     try:
         specific_query = simple_query_totals({"query": "body_text_ws:%s" % search_terms,
@@ -236,8 +236,8 @@ def do_double_search(request_form):
     :param request_form:
     :return:
     """
-    search_term1 = request_form["doubleTermQuery1"]
-    search_term2 = request_form["doubleTermQuery2"]
+    search_term1 = request_form["doubleTermQuery1"].lower()
+    search_term2 = request_form["doubleTermQuery2"].lower()
     language_var, country_var = request_form["languageAndRegion"].split(':', 1)
 
     try:
