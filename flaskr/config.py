@@ -10,13 +10,15 @@ NOT_AVAIL = "NA"
 
 # list of language code, country code, language name, and country name
 AVAILABLE_OPTIONS = [('da', 'dk', 'Danish', 'Denmark'),
-                     ('en', 'uk', 'English', 'UK')]#, ('fr', 'fr', 'French', 'France')]
+                     ('en', 'uk', 'English', 'UK'),
+                     ('fr', 'fr', 'French', 'France')
+                     ]
 
 # map info: latitude, longitude, zoom level
 MAP_VIEWS = {
     'uk': ([54.5, -4], 5),
     'dk': ([56, 10.5], 6),
-    'fr': ([46, 2], 5),
+    'fr': ([46, 2], 5)
 }
 
 NUTS_NAMES = {"BE100": "Arr. de Bruxelles-Capitale / Arr. van Brussel-Hoofdstad", "BE211": "Arr. Antwerpen",

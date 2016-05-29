@@ -13,7 +13,7 @@ from config import P_LEVELS
 from config import ROLLING_MEAN_FRAME
 from flask import request
 from numpy import arange
-from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender
+from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender, perform_query, terms_facet
 from scipy.stats import chi2_contingency, spearmanr
 
 # Create the application.
@@ -33,9 +33,12 @@ def welcome():
             return do_double_search(request.form)
 
     else:
-        totals = simple_query_totals()
-        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
-                          country_info in AVAILABLE_OPTIONS}
+        totals = perform_query({"query": "*:*",
+                          "facet": {"country": terms_facet("country_s")}})["facets"]['country']["buckets"]
+        country_totals = {country_info['val']: country_info['count'] for country_info in totals}
+        # country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
+        #                   country_info in AVAILABLE_OPTIONS}
+        print(country_totals)
 
         return flask.render_template('index.html', map_views=MAP_VIEWS,
                                      available_options=AVAILABLE_OPTIONS,
@@ -54,9 +57,12 @@ def search():
             return do_double_search(request.form)
 
     else:
-        totals = simple_query_totals()
-        country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
-                          country_info in AVAILABLE_OPTIONS}
+        totals = perform_query({"query": "*:*",
+                          "facet": {"country": terms_facet("country_s")}})["facets"]['country']["buckets"]
+        country_totals = {country_info['val']: country_info['count'] for country_info in totals}
+        # totals = simple_query_totals()
+        # country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
+        #                   country_info in AVAILABLE_OPTIONS}
 
         return flask.render_template('search.html',
                                      map_views=MAP_VIEWS,
@@ -98,15 +104,15 @@ def do_single_search(request_form):
                                      search_mode='single')
 
     # need to check country again for some reason
-    specific_query = specific_query[specific_query.country_code == country_var]
+    # specific_query = specific_query[specific_query.country_code == country_var]
     matches = specific_query['num_docs'].sum()
 
     #############################
     # GET TOTALS FOR EVERYTHING #
     #############################
     totals = simple_query_totals()
-    country_mask = totals.country_code == country_var
-    totals = totals[country_mask]
+    # country_mask = totals.country_code == country_var
+    # totals = totals[country_mask]
 
     gender_totals = totals.groupby('gender').num_docs.sum()
 
@@ -167,8 +173,8 @@ def do_single_search(request_form):
                       ylabel="percentage",
                       logo=None,
                       toolbar_location="below",
-                      width=300,
-                      height=400,
+                      # width=300,
+                      # height=400,
                       webgl=False)
 
     age_plot = Line(compare_age_df,
@@ -179,8 +185,8 @@ def do_single_search(request_form):
                     ylabel="percentage",
                     logo=None,
                     toolbar_location="below",
-                    width=800,
-                    height=400,
+                    # width=800,
+                    # height=400,
                     legend='top_right',
                     color=['silver', 'red'],
                     webgl=False)
@@ -193,8 +199,8 @@ def do_single_search(request_form):
                              x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
                              logo=None,
                              toolbar_location="below",
-                             width=600,
-                             height=400,
+                             # width=600,
+                             # height=400,
                              legend='top_right',
                              color=['silver', 'green'],
                              webgl=False)
@@ -205,8 +211,8 @@ def do_single_search(request_form):
                              x_range=Range1d(start=MIN_AGE, end=MAX_AGE),
                              logo=None,
                              toolbar_location="below",
-                             width=600,
-                             height=400,
+                             # width=600,
+                             # height=400,
                              legend='top_right',
                              color=['silver', 'blue'],
                              webgl=False)
@@ -243,7 +249,7 @@ def do_double_search(request_form):
     try:
         specific_query1 = simple_query_totals({"query": "body_text_ws:%s" % search_term1,
                                                "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-        specific_query1 = specific_query1[specific_query1.country_code == country_var]
+        # specific_query1 = specific_query1[specific_query1.country_code == country_var]
     except KeyError:
         return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
@@ -251,7 +257,7 @@ def do_double_search(request_form):
     try:
         specific_query2 = simple_query_totals({"query": "body_text_ws:%s" % search_term2,
                                                "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-        specific_query2 = specific_query2[specific_query2.country_code == country_var]
+        # specific_query2 = specific_query2[specific_query2.country_code == country_var]
     except KeyError:
         return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
@@ -263,8 +269,8 @@ def do_double_search(request_form):
     # GET TOTALS FOR EVERYTHING #
     #############################
     totals = simple_query_totals()
-    country_mask = totals.country_code == country_var
-    totals = totals[country_mask]
+    # country_mask = totals.country_code == country_var
+    # totals = totals[country_mask]
 
     gender_totals = totals.groupby('gender').num_docs.sum()
 
@@ -314,8 +320,8 @@ def do_double_search(request_form):
                       title="Distribution by gender",
                       logo=None,
                       toolbar_location="below",
-                      width=600,
-                      height=400,
+                      # width=600,
+                      # height=400,
                       legend='top_right',
                       color=['blue', 'green'],
                       webgl=False)
@@ -352,10 +358,10 @@ def do_double_search(request_form):
                     xlabel='age',
                     logo=None,
                     toolbar_location="below",
-                    width=1000,
                     legend='top_right',
                     color=['silver', 'blue', 'green'],
-                    height=400,
+                    # width=1000,
+                    # height=400,
                     webgl=False)
 
     ########

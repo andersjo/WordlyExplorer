@@ -61,7 +61,7 @@ def simple_query_totals(user_query=None):
         "query": "*:*",
         "limit": 0,
         "facet": {
-            compound_field: terms_facet(compound_field+"_s"),
+            compound_field: terms_facet(compound_field+"_s")
         }
     }
 
@@ -95,7 +95,7 @@ def simple_query_totals(user_query=None):
     D = D.replace("NA", np.nan)
 
     D.age_num = D.age.astype(float)
-    D['country_code'] = D.nuts_3.str.slice(0, 2).str.lower()
+    # D['country_code'] = D.nuts_3.str.slice(0, 2).str.lower()
 
     return D
 
@@ -119,4 +119,8 @@ if __name__ == '__main__':
     # print(totals)
     # fields
     # age   count gender nuts_3 country_code
-    print(totals[(totals['gender'] == 'M') & (totals['country_code'] == 'uk')]['num_docs'].sum())
+    # print(totals)
+    # print(totals[(totals['country_code'] == 'fr')]['num_docs'].sum())
+    X = perform_query({"query": "*:*",
+                          "facet": {"country": terms_facet("country_s")}})
+    print(X["facets"]['country']["buckets"])
