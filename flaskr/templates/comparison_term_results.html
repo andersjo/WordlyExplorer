@@ -4,56 +4,59 @@
 
 {% block content %}
 
-    {{ bokeh_script | safe }}
+{{ bokeh_script | safe }}
 
-    <div class="row">
+<div class="row">
     {% include 'comparison_search_bar.html' %}
-    </div>
+</div>
 
 
-    <div class="row">
-        <p>
-            Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ matches[0] }}  and {{ matches[1] }} results.
-        </p>
-    </div>
+<div class="row">
+    <p>
+        Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ matches[0] }} and {{ matches[1] }}
+        results.<br/>
+        Note that we don't have the same amount of information for every demographic factor, so even though there might
+        be enough data to display a gender distribution, there might not be enough information to compute an age
+        distribution.
+    </p>
+</div>
 
-    <h3>Comparison by gender</h3>
-    <div class="row">
-        <div class="col-md-6 col-xs-9">
+<h3>Comparison by gender</h3>
+<div class="row">
+    <div class="col-md-6 col-xs-9">
         {{ gender_comparison | safe }}
-            Raw counts for each variable per gender.
+        Raw counts for each variable per gender.
         {{ gender_stats_msg | safe }}
 
-        </div>
-        <div class="col-md-6 col-xs-9">
-            {{ gender_plot | safe }}
-            Distribution over gender, adjusted for sample size.
-        </div>
-
+    </div>
+    <div class="col-md-6 col-xs-9">
+        {{ gender_plot | safe }}
+        Distribution over gender, adjusted for sample size.
     </div>
 
+</div>
 
-    <h3>Comparison by age</h3>
-    <div class="row">
-        <div class="col-md-12 col-xs-12">
-            {{ age_plot | safe }}
-            Distribution over age, adjusted for sample size.
-        </div>
+
+<h3>Comparison by age</h3>
+<div class="row">
+    <div class="col-md-12 col-xs-12">
+        {{ age_plot | safe }}
+        Distribution over age, adjusted for sample size.
     </div>
+</div>
 
 
-    <h3>Comparison by region</h3>
-    <div class="row">
-        <p>
-            {{ outlier_description | safe }}
-        </p>
-    </div>
+<h3>Comparison by region</h3>
+<div class="row">
+    <p>
+        {{ outlier_description | safe }}
+    </p>
+</div>
 
 
-
-    <!--<pre>-->
-    <!--{{ json_results1 }}-->
-    <!--</pre>-->
+<!--<pre>-->
+<!--{{ json_results1 }}-->
+<!--</pre>-->
 
 
 {% endblock %}

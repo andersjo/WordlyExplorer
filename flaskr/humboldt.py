@@ -145,15 +145,22 @@ def do_single_search(request_form):
     ##################
     age_and_gender_totals = prepare_age_and_gender(totals)
     age_and_gender_specific_query = prepare_age_and_gender(specific_query)
+    print(age_and_gender_totals, age_and_gender_specific_query)
 
-    compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M'],
-                                    'query': pd.rolling_mean(age_and_gender_specific_query['M'],
-                                                             ROLLING_MEAN_FRAME)})
+    try:
+        compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M'],
+                                        'query': pd.rolling_mean(age_and_gender_specific_query['M'],
+                                                                 ROLLING_MEAN_FRAME)})
+    except KeyError:
+        compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M']})
     compare_male_df['i'] = compare_male_df.index
 
-    compare_female_df = pd.DataFrame({'background distribution': age_and_gender_totals['F'],
-                                      'query': pd.rolling_mean(age_and_gender_specific_query['F'],
-                                                               ROLLING_MEAN_FRAME)})
+    try:
+        compare_female_df = pd.DataFrame({'background distribution': age_and_gender_totals['F'],
+                                          'query': pd.rolling_mean(age_and_gender_specific_query['F'],
+                                                                   ROLLING_MEAN_FRAME)})
+    except KeyError:
+        compare_female_df = pd.DataFrame({'background distribution': age_and_gender_totals['F']})
     compare_female_df['i'] = compare_female_df.index
 
     ########

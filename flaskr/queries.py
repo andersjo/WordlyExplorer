@@ -100,7 +100,7 @@ def simple_query_totals(user_query=None):
     return D
 
 def sort_and_filter_age(age_df):
-    age_df.index = age_df.index.astype(int)
+    age_df.index = age_df.index.astype(float)
     ages_index = [age for age in sorted(age_df.index)
                   if age >= MIN_AGE and age <= MAX_AGE]
     return age_df.ix[ages_index]

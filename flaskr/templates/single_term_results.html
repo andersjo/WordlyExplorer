@@ -3,7 +3,7 @@
 {% block title %}Search results{% endblock %}
 
 {% block content %}
-   <script language="javascript">
+<script language="javascript">
         var nutsdata = {{ nuts_query|safe }};
 
         function handleLayer(layer) {
@@ -93,58 +93,61 @@
                     .done(addTopoData);
 
         }, false);
-    </script>
 
-    {{ bokeh_script | safe }}
+</script>
 
-    <div>
+{{ bokeh_script | safe }}
+
+<div>
     {% include 'single_search_bar.html' %}
-    </div>
+</div>
 
 
-    <div>
-    Your search for <em>{{ query }}</em> found {{ matches }} results.
-    </div>
+<div>
+    Your search for <em>{{ query }}</em> found {{ matches }} results.<br/>
+    Note that we don't have the same amount of information for every demographic factor, so even though there might be
+    enough data to display a gender distribution, there might not be enough information to compute an age distribution.
+</div>
 
-    <h3>Age and gender</h3>
-    <div class="row">
-        <div class="col-md-6 col-xs-9">
-            {{ gender_plot | safe }}
-            The plot show the ratio of identified men and women who use <em>{{ query }}</em>, adjusted for sample size.
-        </div>
-        <div class="col-md-6 col-xs-9">
-            {{ age_plot | safe }}
-            Normalized distribution over age range for <em>{{ query }}</em>, and comparison to base distribution.
-        </div>
+<h3>Age and gender</h3>
+<div class="row">
+    <div class="col-md-6 col-xs-9">
+        {{ gender_plot | safe }}
+        The plot show the ratio of identified men and women who use <em>{{ query }}</em>, adjusted for sample size.
     </div>
+    <div class="col-md-6 col-xs-9">
+        {{ age_plot | safe }}
+        Normalized distribution over age range for <em>{{ query }}</em>, and comparison to base distribution.
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-6 col-xs-9">
-            {{ age_gender_plot_F | safe }}
-        </div>
-        <div class="col-md-6 col-xs-9">
-            {{ age_gender_plot_M | safe }}
-        </div>
+<div class="row">
+    <div class="col-md-6 col-xs-9">
+        {{ age_gender_plot_F | safe }}
     </div>
-    <div class="row">
-        <div class="col-md-12 col-xs-12">
-            Normalized distribution over age range for men and women.
-        </div>
+    <div class="col-md-6 col-xs-9">
+        {{ age_gender_plot_M | safe }}
     </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12">
+        Normalized distribution over age range for men and women.
+    </div>
+</div>
 
 
-    <h3>Regional distribution</h3>
-    <div class="row">
-        <div class="col-md-12 col-xs-12">
-            The map shows the percentage of records for each NUTS region that use the term <em>{{ query }}</em>.
-            <div id="mapid"></div>
-            {% if outliers != '' %}
-            The term is used more frequently than average in following regions:
-            {{ outliers }}
-            (the ratio of term in the vocabulary of these regions is larger than the average ratio across regions).
-            {% endif %}
-        </div>
+<h3>Regional distribution</h3>
+<div class="row">
+    <div class="col-md-12 col-xs-12">
+        The map shows the percentage of records for each NUTS region that use the term <em>{{ query }}</em>.
+        <div id="mapid"></div>
+        {% if outliers != '' %}
+        The term is used more frequently than average in following regions:
+        {{ outliers }}
+        (the ratio of term in the vocabulary of these regions is larger than the average ratio across regions).
+        {% endif %}
     </div>
+</div>
 
 {% endblock %}
 
