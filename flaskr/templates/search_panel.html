@@ -9,11 +9,11 @@
 
   <!-- Tab panes -->
   <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="singlesearch">
+    <div role="tabpanel" class="tab-pane fade in active col-md-12 col-xs-12" id="singlesearch">
         {% include 'single_search_bar.html' %}
     </div>
 
-    <div role="tabpanel" class="tab-pane fade" id="comparisonsearch">
+    <div role="tabpanel" class="tab-pane fade col-md-12 col-xs-12" id="comparisonsearch">
         {% include 'comparison_search_bar.html' %}
     </div>
 
@@ -22,12 +22,14 @@
 </div>
 
 <div class="row">
-Currently available records:
-  <ul>
-    {% for (language_code, country_code, language_name, country_name) in available_options %}
-      <li>{{language_name}}/{{country_name}}: {{ totals[country_code] }}</li>
-    {% endfor %}
-  </ul>
+  <div class="col-md-12 col-xs-12">
+  Currently available records:
+    <ul>
+      {% for (language_code, country_code, language_name, country_name) in available_options %}
+        <li>{{language_name}}/{{country_name}}: {{ totals[country_code] }}</li>
+      {% endfor %}
+    </ul>
+  </div>
 </div>
 
 

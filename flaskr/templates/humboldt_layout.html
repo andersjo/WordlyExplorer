@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
@@ -29,13 +29,7 @@
 
     <!-- TopoJSON support to get NUTS !-->
     <script src="http://d3js.org/topojson.v1.min.js"></script>
-    <style type="text/css">
-        #mapid {
-            height: 400px;
-            width: 500px;
-            margin: auto;
-        }
-    </style>
+
 
 </head>
 
@@ -51,7 +45,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{ url_for('welcome') }}">Computational Sociolinguistics at Scale</a>
+            <a class="navbar-brand" href="{{ url_for('welcome') }}">Humboldt Explorer</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
@@ -65,14 +59,13 @@
 
 <div class="container">
 
-    <div class="starter-template">
+    <div class="starter-template row">
         <h1>Humboldt</h1>
+        <p class="lead">An explorer for large-scale computational sociolinguistics</p>
+    </div>
 
-        <p class="lead">An explorer for large-scale computational sociolinguistics.</p>
-    </div>
-    <div class="humboldt_main_container">
-        {% block content %}{% endblock %}
-    </div>
+    <!--TODO: make sure these are always wrapped in a .row-->
+    {% block content %}{% endblock %}
 
 </div><!-- /.container -->
 

@@ -17,11 +17,9 @@ ACTION:
 
 - index words manually, to allow for search over lower-cased and actual-cased strings. For now, use lower case.
 - have a mode that discovers existing spelling variations of the target word, and allow the user to include them
-- Soundex: find the "phonological signature" of a word
 - Note potential problem: tokenization is based on CoNLL, might include titles, but exclude single-word files
 - what age groups do we want? Binning by 10 years, plus at least one other one
 - check SOLR user guide for field options
-- add an import field 'source_version' (TP-2014, Twitter-DA, etc.)
 
 ACTION:
 - AJ: fiddle with imports
@@ -86,15 +84,23 @@ PLOTS/INFO:
 - include error handling if search term is not found: DONE
 - add region names instead of NUTS code in list of outliers: DONE
 - go live...: DONE!
+- age plots have the wrong x-label range!: DONE
+- change query names to query: DONE
 
 ==============================================================================================================
 
 TODO:
 - add worked examples on front page: how do we link to a results page?
-- age plots have the wrong x-label range!
 - at the end of side-by-side, include links to the individual queries
+- add France (missing NUTS-info: a) fix that in the enrichment script, but b) WTF does it not get imported?)
+- add Danish Twitter
+- add Dutch and Belgian data
+- add an import field 'source_version' (TP-2014, Twitter-DA, etc.)
+- Soundex: find the "phonological signature" of a word
+
 
 NICE TO HAVE AT SOME POINT:
 - add link to results JSON
 - add tooltips to map with NUTS code, count, rel. freq. in region 
-
+- add notice: work in progress
+- add banner: donate your data!

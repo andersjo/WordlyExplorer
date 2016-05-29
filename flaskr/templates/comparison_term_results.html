@@ -12,18 +12,20 @@
 
 
     <div class="row">
-    Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ matches[0] }}  and {{ matches[1] }} results.
+        <p>
+            Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ matches[0] }}  and {{ matches[1] }} results.
+        </p>
     </div>
 
     <h3>Comparison by gender</h3>
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6 col-xs-9">
         {{ gender_comparison | safe }}
             Raw counts for each variable per gender.
         {{ gender_stats_msg | safe }}
 
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 col-xs-9">
             {{ gender_plot | safe }}
             Distribution over gender, adjusted for sample size.
         </div>
@@ -33,18 +35,18 @@
 
     <h3>Comparison by age</h3>
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-12 col-xs-12">
             {{ age_plot | safe }}
             Distribution over age, adjusted for sample size.
         </div>
-        <!--{{ age_comparison | safe }}-->
-        <!--{{ age_stats_msg | safe }}-->
     </div>
 
 
     <h3>Comparison by region</h3>
     <div class="row">
-        {{ outlier_description | safe }}
+        <p>
+            {{ outlier_description | safe }}
+        </p>
     </div>
 
 

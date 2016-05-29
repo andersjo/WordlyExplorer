@@ -108,7 +108,7 @@
 
     <h3>Age and gender</h3>
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4 col-xs-6">
             {{ gender_plot | safe }}
             The plot show the ratio of identified men and women who use <em>{{ query }}</em>, adjusted for sample size.
         </div>
@@ -119,13 +119,15 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 col-xs-9">
             {{ age_gender_plot_F | safe }}
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 col-xs-9">
             {{ age_gender_plot_M | safe }}
         </div>
-        <div class="col-md-10">
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-xs-12">
             Normalized distribution over age range for men and women.
         </div>
     </div>
@@ -133,7 +135,7 @@
 
     <h3>Regional distribution</h3>
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-12 col-xs-12">
             The map shows the percentage of records for each NUTS region that use the term <em>{{ query }}</em>.
             <div id="mapid"></div>
             {% if outliers != '' %}
