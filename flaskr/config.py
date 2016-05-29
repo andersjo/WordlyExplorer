@@ -9,7 +9,7 @@ ROLLING_MEAN_FRAME = 2
 NOT_AVAIL = "NA"
 
 # list of language code, country code, language name, and country name
-AVAILABLE_OPTIONS = [('da', 'dk', 'Dansk', 'Denmark'),
+AVAILABLE_OPTIONS = [('da', 'dk', 'Dansk', 'Danmark'),
                      ('en', 'uk', 'English', 'UK'),
                      ('fr', 'fr', 'Français', 'France'),
                      ('de', 'de', 'Deutsch', 'Deutschland'),
