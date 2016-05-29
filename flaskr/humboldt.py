@@ -38,7 +38,6 @@ def welcome():
         country_totals = {country_info['val']: country_info['count'] for country_info in totals}
         # country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
         #                   country_info in AVAILABLE_OPTIONS}
-        print(country_totals)
 
         return flask.render_template('index.html', map_views=MAP_VIEWS,
                                      available_options=AVAILABLE_OPTIONS,
@@ -145,7 +144,6 @@ def do_single_search(request_form):
     ##################
     age_and_gender_totals = prepare_age_and_gender(totals)
     age_and_gender_specific_query = prepare_age_and_gender(specific_query)
-    print(age_and_gender_totals, age_and_gender_specific_query)
 
     try:
         compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M'],
