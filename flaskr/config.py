@@ -9,11 +9,12 @@ ROLLING_MEAN_FRAME = 2
 NOT_AVAIL = "NA"
 
 # list of language code, country code, language name, and country name
-AVAILABLE_OPTIONS = [('da', 'dk', 'Dansk', 'Danmark'),
-                     ('en', 'uk', 'English', 'UK'),
-                     ('fr', 'fr', 'Français', 'France'),
-                     ('de', 'de', 'Deutsch', 'Deutschland'),
-                     ]
+AVAILABLE_OPTIONS = [
+    ('en', 'uk', 'English', 'UK'),
+    ('da', 'dk', 'Dansk', 'Danmark'),
+    ('fr', 'fr', 'Français', 'France'),
+    ('de', 'de', 'Deutsch', 'Deutschland'),
+]
 
 # map info: latitude, longitude, zoom level
 MAP_VIEWS = {
