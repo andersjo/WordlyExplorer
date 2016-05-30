@@ -126,7 +126,12 @@ def do_single_search(request_form):
     ###########
     gender_specific_query = specific_query.groupby('gender').num_docs.sum()
     abs_percentages = gender_specific_query / gender_totals
-    renormalizer = 1.0 / abs_percentages.sum()
+    try:
+        renormalizer = 1.0 / abs_percentages.sum()
+    except ZeroDivisionError:
+        return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS,
+                             search_mode='single')
+
     gender_query_adjusted = abs_percentages * renormalizer
 
     #######
@@ -294,8 +299,17 @@ def do_double_search(request_form):
     gender_specific_query2 = specific_query2.groupby('gender').num_docs.sum()
     abs_percentages1 = gender_specific_query1 / gender_totals
     abs_percentages2 = gender_specific_query2 / gender_totals
-    renormalizer1 = 1.0 / abs_percentages1.sum()
-    renormalizer2 = 1.0 / abs_percentages2.sum()
+    try:
+        renormalizer1 = 1.0 / abs_percentages1.sum()
+    except ZeroDivisionError:
+        return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
+                             search_mode='double')
+    try:
+        renormalizer2 = 1.0 / abs_percentages2.sum()
+    except ZeroDivisionError:
+        return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
+                             search_mode='double')
+
     gender_query_adjusted1 = abs_percentages1 * renormalizer1
     gender_query_adjusted2 = abs_percentages2 * renormalizer2
 
