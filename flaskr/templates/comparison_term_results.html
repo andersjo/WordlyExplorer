@@ -25,6 +25,8 @@
 <div class="row">
     <div class="col-md-6 col-xs-9">
         {{ gender_comparison | safe }}
+        <b>Total records with gender information for <em>{{ query1 }}</em>: {{ "{:,}".format(gender_total1) }}</b><br />
+        <b>Total records with gender information for <em>{{ query2 }}</em>: {{ "{:,}".format(gender_total2) }}</b><br />
         Raw counts for each variable per gender.
         {{ gender_stats_msg | safe }}
 
@@ -41,6 +43,8 @@
 <div class="row">
     <div class="col-md-12 col-xs-12">
         {{ age_plot | safe }}
+        <b>Total records with age information for <em>{{ query1 }}</em>: {{ "{:,}".format(age_total1) }}</b><br />
+        <b>Total records with age information for <em>{{ query2 }}</em>: {{ "{:,}".format(age_total2) }}</b><br />
         Distribution over age, adjusted for sample size.
     </div>
 </div>
@@ -49,6 +53,8 @@
 <h3>Comparison by region</h3>
 <div class="row">
     <p>
+        <b>Total records with region information for <em>{{ query1 }}</em>: {{ "{:,}".format(nuts_total1) }}</b><br />
+        <b>Total records with region information for <em>{{ query2 }}</em>: {{ "{:,}".format(nuts_total2) }}</b><br />
         {{ outlier_description | safe }}
     </p>
 </div>

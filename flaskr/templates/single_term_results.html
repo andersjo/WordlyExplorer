@@ -105,19 +105,21 @@
 
 
 <div>
-    Your search for <em>{{ query }}</em> found {{ matches }} results.<br/>
+    Your search for <em>{{ query }}</em> found {{ "{:,}".format(matches) }} results.<br/>
     Note that we don't have the same amount of information for every demographic factor, so even though there might be
-    enough data to display a gender distribution, there might not be enough information to compute an age distribution.
+    enough data to display, e.g., a gender distribution, there might not be enough information to compute an age distribution.
 </div>
 
 <h3>Age and gender</h3>
 <div class="row">
     <div class="col-md-6 col-xs-9">
         {{ gender_plot | safe }}
+        <b>Total: {{ "{:,}".format(gender_total) }}</b><br />
         The plot show the ratio of identified men and women who use <em>{{ query }}</em>, adjusted for sample size.
     </div>
     <div class="col-md-6 col-xs-9">
         {{ age_plot | safe }}
+        <b>Total: {{ "{:,}".format(age_total) }}</b><br />
         Normalized distribution over age range for <em>{{ query }}</em>, and comparison to base distribution.
     </div>
 </div>
@@ -125,9 +127,11 @@
 <div class="row">
     <div class="col-md-6 col-xs-9">
         {{ age_gender_plot_F | safe }}
+        <b>Total: {{ "{:,}".format(age_total_F) }}</b><br />
     </div>
     <div class="col-md-6 col-xs-9">
         {{ age_gender_plot_M | safe }}
+        <b>Total: {{ "{:,}".format(age_total_M) }}</b><br />
     </div>
 </div>
 <div class="row">

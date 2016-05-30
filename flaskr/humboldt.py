@@ -2,6 +2,7 @@ from _bisect import bisect
 
 import flask
 import pandas as pd
+import sys
 from bokeh.charts import Bar, Line
 from bokeh.embed import components
 from bokeh.models import Range1d
@@ -102,16 +103,13 @@ def do_single_search(request_form):
         return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS,
                                      search_mode='single')
 
-    # need to check country again for some reason
-    # specific_query = specific_query[specific_query.country_code == country_var]
     matches = specific_query['num_docs'].sum()
 
     #############################
     # GET TOTALS FOR EVERYTHING #
     #############################
-    totals = simple_query_totals()
-    # country_mask = totals.country_code == country_var
-    # totals = totals[country_mask]
+    totals = simple_query_totals({"query": "*:*",
+                                        "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
 
     gender_totals = totals.groupby('gender').num_docs.sum()
 
@@ -119,13 +117,15 @@ def do_single_search(request_form):
     age_totals = sort_and_filter_age(age_totals)
     age_totals_norm = age_totals / age_totals.sum()
 
+    age_and_gender_totals = prepare_age_and_gender(totals)
+
     nuts_total = totals.groupby('nuts_3').num_docs.sum()
 
     ###########
     #  GENDER #
     ###########
-    gender_query = specific_query.groupby('gender').num_docs.sum()
-    abs_percentages = gender_query / gender_totals
+    gender_specific_query = specific_query.groupby('gender').num_docs.sum()
+    abs_percentages = gender_specific_query / gender_totals
     renormalizer = 1.0 / abs_percentages.sum()
     gender_query_adjusted = abs_percentages * renormalizer
 
@@ -142,22 +142,25 @@ def do_single_search(request_form):
     ##################
     # AGE AND GENDER #
     ##################
-    age_and_gender_totals = prepare_age_and_gender(totals)
     age_and_gender_specific_query = prepare_age_and_gender(specific_query)
 
     try:
+        age_specific_male_totals = gender_specific_query['M'].sum()
         compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M'],
                                         'query': pd.rolling_mean(age_and_gender_specific_query['M'],
                                                                  ROLLING_MEAN_FRAME)})
     except KeyError:
+        age_specific_male_totals = 0
         compare_male_df = pd.DataFrame({'background distribution': age_and_gender_totals['M']})
     compare_male_df['i'] = compare_male_df.index
 
     try:
+        age_specific_female_totals = gender_specific_query['F']
         compare_female_df = pd.DataFrame({'background distribution': age_and_gender_totals['F'],
                                           'query': pd.rolling_mean(age_and_gender_specific_query['F'],
                                                                    ROLLING_MEAN_FRAME)})
     except KeyError:
+        age_specific_female_totals = 0
         compare_female_df = pd.DataFrame({'background distribution': age_and_gender_totals['F']})
     compare_female_df['i'] = compare_female_df.index
 
@@ -165,7 +168,6 @@ def do_single_search(request_form):
     # NUTS #
     ########
     nuts_query = specific_query.groupby('nuts_3').num_docs.sum()
-    nuts_total = nuts_query.sum()
     nuts_query_norm = nuts_query / nuts_total
     special_regions = nuts_query_norm > nuts_query_norm.median()
 
@@ -238,6 +240,11 @@ def do_single_search(request_form):
                                  map_views=MAP_VIEWS,
                                  nuts_query=nuts_query_norm.to_json(),
                                  outliers=outliers,
+                                 gender_total=gender_specific_query.sum(),
+                                 age_total=age_specific_query.sum(),
+                                 age_total_M=age_specific_male_totals,
+                                 age_total_F=age_specific_female_totals,
+                                 nuts_total=nuts_total.sum(),
                                  available_options=AVAILABLE_OPTIONS)
 
 
@@ -254,7 +261,6 @@ def do_double_search(request_form):
     try:
         specific_query1 = simple_query_totals({"query": "body_text_ws:%s" % search_term1,
                                                "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-        # specific_query1 = specific_query1[specific_query1.country_code == country_var]
     except KeyError:
         return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
@@ -262,7 +268,6 @@ def do_double_search(request_form):
     try:
         specific_query2 = simple_query_totals({"query": "body_text_ws:%s" % search_term2,
                                                "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-        # specific_query2 = specific_query2[specific_query2.country_code == country_var]
     except KeyError:
         return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
@@ -273,9 +278,8 @@ def do_double_search(request_form):
     #############################
     # GET TOTALS FOR EVERYTHING #
     #############################
-    totals = simple_query_totals()
-    # country_mask = totals.country_code == country_var
-    # totals = totals[country_mask]
+    totals = simple_query_totals({"query": "*:*",
+                                        "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
 
     gender_totals = totals.groupby('gender').num_docs.sum()
 
@@ -286,20 +290,20 @@ def do_double_search(request_form):
     ###########
     #  GENDER #
     ###########
-    gender_query1 = specific_query1.groupby('gender').num_docs.sum()
-    gender_query2 = specific_query2.groupby('gender').num_docs.sum()
-    abs_percentages1 = gender_query1 / gender_totals
-    abs_percentages2 = gender_query2 / gender_totals
+    gender_specific_query1 = specific_query1.groupby('gender').num_docs.sum()
+    gender_specific_query2 = specific_query2.groupby('gender').num_docs.sum()
+    abs_percentages1 = gender_specific_query1 / gender_totals
+    abs_percentages2 = gender_specific_query2 / gender_totals
     renormalizer1 = 1.0 / abs_percentages1.sum()
     renormalizer2 = 1.0 / abs_percentages2.sum()
     gender_query_adjusted1 = abs_percentages1 * renormalizer1
     gender_query_adjusted2 = abs_percentages2 * renormalizer2
 
-    gender_comparison = pd.DataFrame(data={search_term1: gender_query1.values, search_term2: gender_query2.values},
-                                     index=gender_query1.index).T
+    gender_comparison = pd.DataFrame(data={search_term1: gender_specific_query1.values, search_term2: gender_specific_query2.values},
+                                     index=gender_specific_query1.index).T
     gender_comparison_adjusted = pd.DataFrame(
         data={search_term1: gender_query_adjusted1.values, search_term2: gender_query_adjusted2.values},
-        index=gender_query1.index).T
+        index=gender_specific_query1.index).T
 
     del gender_comparison.index.name
     chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
@@ -373,12 +377,12 @@ def do_double_search(request_form):
     # NUTS #
     ########
     # TODO: what about missing regions?
-    nuts_query1 = specific_query1.groupby('nuts_3').num_docs.sum()
-    nuts_query2 = specific_query2.groupby('nuts_3').num_docs.sum()
-    nuts_query_norm1 = nuts_query1 / nuts_query1.sum()
-    nuts_query_norm2 = nuts_query2 / nuts_query2.sum()
+    nuts_specific_query1 = specific_query1.groupby('nuts_3').num_docs.sum()
+    nuts_specific_query2 = specific_query2.groupby('nuts_3').num_docs.sum()
+    nuts_query_norm1 = nuts_specific_query1 / nuts_specific_query1.sum()
+    nuts_query_norm2 = nuts_specific_query2 / nuts_specific_query2.sum()
 
-    regions = list(sorted(set(nuts_query1.index).union(set(nuts_query2.index))))
+    regions = list(sorted(set(nuts_specific_query1.index).union(set(nuts_specific_query2.index))))
     nutsdiff = pd.DataFrame(0, index=regions, columns=arange(1))
     nutsdiff[0] = nuts_query_norm1 - nuts_query_norm2
     nutsdiff['G2'] = abs(nutsdiff[0]) > nutsdiff[0].abs().mean()
@@ -413,6 +417,14 @@ def do_double_search(request_form):
                                  age_plot=age_plot_div,
                                  country_code=country_var,
                                  outlier_description=outlier_description,
+                                 gender_total1=gender_specific_query1.sum(),
+                                 gender_total2=gender_specific_query2.sum(),
+                                 age_total1=age_specific_query1.sum(),
+                                 age_total2=age_specific_query2.sum(),
+                                 # age_total_M=age_specific_male_totals,
+                                 # age_total_F=age_specific_female_totals,
+                                 nuts_total1=nuts_specific_query1.sum(),
+                                 nuts_total2=nuts_specific_query2.sum(),
                                  available_options=AVAILABLE_OPTIONS
                                  )
 

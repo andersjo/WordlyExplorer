@@ -86,18 +86,19 @@ PLOTS/INFO:
 - go live...: DONE!
 - age plots have the wrong x-label range!: DONE
 - change query names to query: DONE
+- add France (missing NUTS-info: a) fix that in the enrichment script, but b) WTF does it not get imported?)
 
 ==============================================================================================================
 
 TODO:
+- add totals for each plot! => check totals are right and include language!
+- add Dutch/NL from TP
+- add Danish Twitter
+- add an import field 'source_version' (TP-2014, Twitter-DA, etc.)
+- add Dutch and Belgian CSP data
 - add worked examples on front page: how do we link to a results page?
 - at the end of side-by-side, include links to the individual queries
-- add France (missing NUTS-info: a) fix that in the enrichment script, but b) WTF does it not get imported?)
-- add Danish Twitter
-- add Dutch and Belgian data
-- add an import field 'source_version' (TP-2014, Twitter-DA, etc.)
 - Soundex: find the "phonological signature" of a word
-
 
 NICE TO HAVE AT SOME POINT:
 - add link to results JSON
