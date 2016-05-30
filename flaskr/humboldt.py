@@ -249,7 +249,7 @@ def do_single_search(request_form):
                                  age_total=age_specific_query.sum(),
                                  age_total_M=age_specific_male_totals,
                                  age_total_F=age_specific_female_totals,
-                                 nuts_total=nuts_total.sum(),
+                                 nuts_total=nuts_query.sum(),
                                  available_options=AVAILABLE_OPTIONS)
 
 
