@@ -15,6 +15,10 @@
     <p>
         Your search for <em>{{ query1 }}</em> and <em>{{ query2 }}</em> returned {{ matches[0] }} and {{ matches[1] }}
         results.<br/>
+        {% if matches[0] < 100 or matches[1] < 100 %}
+        <em>Results might not be representative with this number of data points. Please proceed with caution.</em><br />
+        {% endif %}
+
         Note that we don't have the same amount of information for every demographic factor, so even though there might
         be enough data to display a gender distribution, there might not be enough information to compute an age
         distribution.
