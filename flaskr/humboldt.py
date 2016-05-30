@@ -1,5 +1,5 @@
 from _bisect import bisect
-
+from requests.exceptions import HTTPError
 import flask
 import pandas as pd
 import sys
@@ -99,7 +99,7 @@ def do_single_search(request_form):
     try:
         specific_query = simple_query_totals({"query": "body_text_ws:%s" % search_terms,
                                               "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-    except KeyError:
+    except (KeyError, HTTPError):
         return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS,
                                      search_mode='single')
 
@@ -266,14 +266,14 @@ def do_double_search(request_form):
     try:
         specific_query1 = simple_query_totals({"query": "body_text_ws:%s" % search_term1,
                                                "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-    except KeyError:
+    except (KeyError, HTTPError):
         return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
 
     try:
         specific_query2 = simple_query_totals({"query": "body_text_ws:%s" % search_term2,
                                                "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
-    except KeyError:
+    except (KeyError, HTTPError):
         return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
                                      search_mode='double')
 
