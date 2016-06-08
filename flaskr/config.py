@@ -14,14 +14,16 @@ AVAILABLE_OPTIONS = [
     ('da', 'dk', 'Dansk', 'Danmark'),
     ('fr', 'fr', 'Français', 'France'),
     ('de', 'de', 'Deutsch', 'Deutschland'),
+    ('nl', 'nl', 'Nederlands', 'Nederland'),
 ]
 
 # map info: latitude, longitude, zoom level
 MAP_VIEWS = {
     'uk': ([54.5, -4], 5),
     'dk': ([56, 10.5], 6),
+    'fr': ([46, 2], 5),
     'de': ([51.16, 10.45], 5),
-    'fr': ([46, 2], 5)
+    'nl': ([52.23, 4.55], 6),
 }
 
 NUTS_NAMES = {"BE100": "Arr. de Bruxelles-Capitale / Arr. van Brussel-Hoofdstad", "BE211": "Arr. Antwerpen",

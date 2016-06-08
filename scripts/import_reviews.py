@@ -15,6 +15,7 @@ parser.add_argument('file', type=Path)
 parser.add_argument('--locations', type=Path, required=True)
 # parser.add_argument('--country-codes', type=Path, required=True)
 parser.add_argument('--country-code', type=str, required=True)
+parser.add_argument('--source', type=str, required=True)
 args = parser.parse_args()
 
 SOLR_URL = "http://localhost:8983/solr/humboldt"
@@ -106,7 +107,8 @@ def map_solr_fields(review):
         'nuts_3_and_gender': 'nuts_3_and_gender_s',
         'nuts_3_and_gender': 'nuts_3_and_gender_s',
         'nuts_3_and_gender_and_age': 'nuts_3_and_gender_and_age_s',
-        'gender_and_age': 'gender_and_age_s'
+        'gender_and_age': 'gender_and_age_s',
+        'source': 'source_s'
     }
 
     return {MAPPING[key]: val
@@ -144,7 +146,8 @@ def read_json_line(line):
                       'reviewer_id': user['user_id'],
                       'id': user['user_id'] + '_' + str(review_index),
                       'gender': user.get('gender', NOT_AVAIL),
-                      'langid': org_review['langid']
+                      'langid': org_review['langid'],
+                      'source': args.source
                       }
 
         # take care of None values

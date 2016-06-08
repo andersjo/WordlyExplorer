@@ -119,7 +119,8 @@ def do_single_search(request_form):
 
     age_and_gender_totals = prepare_age_and_gender(totals)
 
-    nuts_total = totals.groupby('nuts_3').num_docs.sum()
+    # nuts_total = totals.groupby('nuts_3').num_docs.sum()
+
 
     ###########
     #  GENDER #
@@ -173,6 +174,7 @@ def do_single_search(request_form):
     # NUTS #
     ########
     nuts_query = specific_query.groupby('nuts_3').num_docs.sum()
+    nuts_total = nuts_query.sum()
     nuts_query_norm = nuts_query / nuts_total
     special_regions = nuts_query_norm > nuts_query_norm.median()
 
