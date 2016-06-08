@@ -96,7 +96,7 @@ PLOTS/INFO:
 
 TODO:
 - add Danish Twitter
-- add Dutch and Belgian CSP data
+- add Dutch and Belgian CSP data: produce TP-like JSON file and run scripts
 - add worked examples on front page: how do we link to a results page?
 - at the end of side-by-side, include links to the individual queries
 - Soundex: find the "phonological signature" of a word

@@ -21,26 +21,31 @@
 
 </div>
 
+<p class="row">
+</p>
+
 <div class="row">
   <div class="col-md-12 col-xs-12">
-      Search syntax:
-      <ul>
-        <li>The Kleene star, <em>*</em>, matches everything, so <em>toll*</em> in German covers <em>toll, tolle, tolles, …</em></li>
-        <li>A <em>?</em> matches one character, so <em>toll?</em> in German only covers <em>toll, tolle</em></li>
-        <li>Space-separated terms return the union of all of them, i.e., <em>good better best</em> matches all comparisons of <em>good</em></li>
-        <li>Enclosing terms in quotes <em>"</em> searches for the exact phrase, e.g., <em>"nice job"</em> searches for the two words in that order</li>
-      </ul>
+      <a href="#searchsyntax" class="btn btn-default" data-toggle="collapse">Query syntax</a>
+      <div id="searchsyntax" class="collapse">
+        <ul>
+          <li>The Kleene star, <em>*</em>, matches everything, so <em>toll*</em> in German covers <em>toll, tolle, tolles, …</em></li>
+          <li>A <em>?</em> matches one character, so <em>toll?</em> in German only covers <em>toll, tolle</em></li>
+          <li>Space-separated terms return the union of all of them, i.e., <em>good better best</em> matches all comparisons of <em>good</em></li>
+          <li>Enclosing terms in quotes <em>"</em> searches for the exact phrase, e.g., <em>"nice job"</em> searches for the two words in that order</li>
+        </ul>
+      </div>
     </div>
 </div>
 <div class="row">
   <div class="col-md-12 col-xs-12">
-  Currently available records:
-    <ul>
-      {% for (language_code, country_code, language_name, country_name) in available_options %}
-        <li>{{language_name}}/{{country_name}}: {{ "{:,}".format(totals[country_code]) }}</li>
-      {% endfor %}
-    </ul>
+    <a href="#currentrecords" class="btn btn-default" data-toggle="collapse">Currently available records</a>
+    <div id="currentrecords" class="collapse">
+      <ul>
+        {% for (language_code, country_code, language_name, country_name) in available_options %}
+          <li>{{language_name}}/{{country_name}}: {{ "{:,}".format(totals[country_code]) }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
 </div>
-
-
