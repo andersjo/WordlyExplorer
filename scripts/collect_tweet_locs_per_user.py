@@ -29,7 +29,7 @@ for line_no, line in enumerate(islice(open(args.input), None)):
     try:
         user = tweet['user']['id_str']
         lng, lat = tweet['coordinates']['coordinates']
-        locations[user]['%.1f,%.1f' % (lng, lat)] += 1
+        locations[user]['%.2f,%.2f' % (lng, lat)] += 1
     except KeyError:
         continue
 

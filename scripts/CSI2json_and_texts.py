@@ -29,7 +29,7 @@ def get_JSON_dict(user_id, location=None, gender=None, birth_year=None):
 
 def get_review(date=None, title=None, rating=None, item_type=None, company_id=None, user_id=None):
     review = {"date": date, "text": [], "title": title, "rating": rating, "item_type": item_type, "company_id": company_id,
-                      "user_id": user_id}
+                      "user_id": user_id, "langid": "nl"}
     return review
 
 doc_info = pd.read_csv("data/csicorpus/List.CSI.DocumentData.1.4.0.BV.2016-02-08.txt",

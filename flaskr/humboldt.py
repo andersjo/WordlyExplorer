@@ -1,8 +1,7 @@
 from _bisect import bisect
-from requests.exceptions import HTTPError
+
 import flask
 import pandas as pd
-import sys
 from bokeh.charts import Bar, Line
 from bokeh.embed import components
 from bokeh.models import Range1d
@@ -15,6 +14,7 @@ from config import ROLLING_MEAN_FRAME
 from flask import request
 from numpy import arange
 from queries import simple_query_totals, sort_and_filter_age, prepare_age_and_gender, perform_query, terms_facet
+from requests.exceptions import HTTPError
 from scipy.stats import chi2_contingency, spearmanr
 
 # Create the application.
@@ -35,7 +35,7 @@ def welcome():
 
     else:
         totals = perform_query({"query": "*:*",
-                          "facet": {"country": terms_facet("country_s")}})["facets"]['country']["buckets"]
+                                "facet": {"country": terms_facet("country_s")}})["facets"]['country']["buckets"]
         country_totals = {country_info['val']: country_info['count'] for country_info in totals}
         # country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
         #                   country_info in AVAILABLE_OPTIONS}
@@ -58,7 +58,7 @@ def search():
 
     else:
         totals = perform_query({"query": "*:*",
-                          "facet": {"country": terms_facet("country_s")}})["facets"]['country']["buckets"]
+                                "facet": {"country": terms_facet("country_s")}})["facets"]['country']["buckets"]
         country_totals = {country_info['val']: country_info['count'] for country_info in totals}
         # totals = simple_query_totals()
         # country_totals = {country_info[1]: totals[totals.country_code == country_info[1]].sum()['num_docs'].sum() for
@@ -109,7 +109,7 @@ def do_single_search(request_form):
     # GET TOTALS FOR EVERYTHING #
     #############################
     totals = simple_query_totals({"query": "*:*",
-                                        "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+                                  "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
 
     gender_totals = totals.groupby('gender').num_docs.sum()
 
@@ -131,7 +131,7 @@ def do_single_search(request_form):
         renormalizer = 1.0 / abs_percentages.sum()
     except ZeroDivisionError:
         return flask.render_template('no_results.html', query=search_terms, available_options=AVAILABLE_OPTIONS,
-                             search_mode='single')
+                                     search_mode='single')
 
     gender_query_adjusted = abs_percentages * renormalizer
 
@@ -286,7 +286,7 @@ def do_double_search(request_form):
     # GET TOTALS FOR EVERYTHING #
     #############################
     totals = simple_query_totals({"query": "*:*",
-                                        "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
+                                  "filter": ["country_s:%s" % country_var, "langid_s:%s" % language_var]})
 
     gender_totals = totals.groupby('gender').num_docs.sum()
 
@@ -297,29 +297,33 @@ def do_double_search(request_form):
     ###########
     #  GENDER #
     ###########
-    gender_specific_query1 = specific_query1.groupby('gender').num_docs.sum()
-    gender_specific_query2 = specific_query2.groupby('gender').num_docs.sum()
-    abs_percentages1 = gender_specific_query1 / gender_totals
-    abs_percentages2 = gender_specific_query2 / gender_totals
+    gender_specific_query1 = pd.DataFrame(data=specific_query1.groupby('gender').num_docs.sum(),
+                                          index=['F', 'M']).fillna(0)
+    gender_specific_query2 = pd.DataFrame(data=specific_query2.groupby('gender').num_docs.sum(),
+                                          index=['F', 'M']).fillna(0)
+    abs_percentages1 = gender_specific_query1.num_docs / gender_totals
+    abs_percentages2 = gender_specific_query2.num_docs / gender_totals
     try:
         renormalizer1 = 1.0 / abs_percentages1.sum()
     except ZeroDivisionError:
         return flask.render_template('no_results.html', query=search_term1, available_options=AVAILABLE_OPTIONS,
-                             search_mode='double')
+                                     search_mode='double')
     try:
         renormalizer2 = 1.0 / abs_percentages2.sum()
     except ZeroDivisionError:
         return flask.render_template('no_results.html', query=search_term2, available_options=AVAILABLE_OPTIONS,
-                             search_mode='double')
+                                     search_mode='double')
 
     gender_query_adjusted1 = abs_percentages1 * renormalizer1
     gender_query_adjusted2 = abs_percentages2 * renormalizer2
 
-    gender_comparison = pd.DataFrame(data={search_term1: gender_specific_query1.values, search_term2: gender_specific_query2.values},
-                                     index=gender_specific_query1.index).T
+    gender_comparison = pd.DataFrame(
+        data={search_term1: gender_specific_query1.values.reshape(-1), search_term2: gender_specific_query2.values.reshape(-1)},
+        index=['F', 'M']).T
+
     gender_comparison_adjusted = pd.DataFrame(
         data={search_term1: gender_query_adjusted1.values, search_term2: gender_query_adjusted2.values},
-        index=gender_specific_query1.index).T
+        index=['F', 'M']).T
 
     del gender_comparison.index.name
     chi2, pvalue, dof, expected = chi2_contingency(gender_comparison)
@@ -433,8 +437,8 @@ def do_double_search(request_form):
                                  age_plot=age_plot_div,
                                  country_code=country_var,
                                  outlier_description=outlier_description,
-                                 gender_total1=gender_specific_query1.sum(),
-                                 gender_total2=gender_specific_query2.sum(),
+                                 gender_total1=gender_specific_query1.sum().num_docs,
+                                 gender_total2=gender_specific_query2.sum().num_docs,
                                  age_total1=age_specific_query1.sum(),
                                  age_total2=age_specific_query2.sum(),
                                  # age_total_M=age_specific_male_totals,
